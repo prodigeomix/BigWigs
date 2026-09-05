@@ -140,6 +140,13 @@ function module:OnEnable()
 	--self:RegisterEvent("PLAYER_REGEN_DISABLED", "CheckForEngage")
 end
 
+function module:OnSetup()
+	self:ThrottleSync(4, syncName.frostbreath)
+	self:ThrottleSync(4, syncName.geyserBegin)
+	self:ThrottleSync(4, syncName.geyserCast)
+	self:ThrottleSync(4, syncName.slam)
+end
+
 function module:Event(msg)
 	if msg == L["trigger_frostbreathCast"] then
 		self:Sync(syncName.frostbreath)

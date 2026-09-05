@@ -349,7 +349,7 @@ function module:TeleportToRoom()
 		self:Bar(L["bar_roomWave"], timer.waveAfterTeleport, icon.add, true, "Black")
 	end
 	if self.db.profile.teleport then
-		self:Message(string.format(L["msg_tpToRoom"], timer.room), "Important")
+		self:Message(L["msg_tpToRoom"], "Important")
 		self:Bar(L["bar_teleport"], timer.room, icon.teleport, true, "White")
 	end
 	self:ScheduleEvent("bwnothtobalcony", self.TeleportToBalcony, timer.room, self)

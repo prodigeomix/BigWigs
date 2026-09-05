@@ -89,6 +89,7 @@ function module:OnEnable()
 
 	self:ThrottleSync(5, syncName.shieldGain)
 	self:ThrottleSync(5, syncName.shieldFade)
+	self:ThrottleSync(0.5, syncName.shieldAbsorbed)
 end
 
 function module:OnSetup()

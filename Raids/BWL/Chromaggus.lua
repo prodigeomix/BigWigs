@@ -288,8 +288,8 @@ function module:Event(msg)
 	--check for vulnerability from dots
 	if string.find(msg, L["trigger_dotDamage"]) and currentVulnerability == "???" and (GetTime() > (vulnerabilityResetTime + 3)) then
 		local _, _, dmg, school, spellName, partial = string.find(msg, L["trigger_dotDamage"])
-		if hitOrCrit == nil or dmg == nil or school == nil then return end
-		if not type(school) == "string" then return end
+		if dmg == nil or school == nil then return end
+		if type(school) ~= "string" then return end
 		dmg = tonumber(dmg)
 		if partial and partial ~= "" then dmg = tonumber(dmg) + tonumber(partial) end
 		
@@ -327,7 +327,7 @@ function module:Event(msg)
 		local hit = nil
 		local crit = nil
 		if hitOrCrit == nil or dmg == nil or school == nil then return end
-		if not type(school) == "string" then return end
+		if type(school) ~= "string" then return end
 		if hitOrCrit == "hits" then hit = true elseif hitOrCrit == "crits" then crit = true end
 		dmg = tonumber(dmg)
 		if partial and partial ~= "" then dmg = tonumber(dmg) + tonumber(partial) end

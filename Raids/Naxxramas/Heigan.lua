@@ -264,7 +264,7 @@ function module:DanceStart()
 	self:ScheduleEvent("bwHeiganToFloor", self.FightStart, timer.danceDuration, self)
 
 	if self.db.profile.teleport then
-		self:Message(string.format(L["msg_danceStart"], timer.danceDuration), "Attention")
+		self:Message(L["msg_danceStart"], "Attention")
 		self:Bar(L["bar_dancing"], timer.danceDuration, icon.danceDuration, true, "White")
 		if self.db.profile.fundance then
 			BigWigsSound:BigWigs_Sound("FunDance")

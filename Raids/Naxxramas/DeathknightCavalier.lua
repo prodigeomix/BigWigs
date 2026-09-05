@@ -67,10 +67,10 @@ function module:OnEnable()
 	
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE", "Event") --trigger_deathCoilYou
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE", "Event") --trigger_deathCoilOther
-	self:RegisterEvent("CHAT_MSG_CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE", "Event") --trigger_deathCoilOther
+	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE", "Event") --trigger_deathCoilOther
 	
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_SELF", "Event") --trigger_deathCoilFade
-	self:RegisterEvent("CHAT_MSG_SPELL_AURA_PARTY_OTHER", "Event") --trigger_deathCoilFade
+	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_PARTY", "Event") --trigger_deathCoilFade
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "Event") --trigger_deathCoilFade
 	
 	self:ThrottleSync(0.1, syncName.deathCoil)

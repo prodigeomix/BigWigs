@@ -106,6 +106,7 @@ function module:OnEnable()
 	self:ThrottleSync(2, syncName.earthstomp)
 	self:ThrottleSync(2, syncName.dm_spawn)
 	self:ThrottleSync(2, syncName.phase2)
+	self:ThrottleSync(2, syncName.igniteRock)
 end
 
 -- function module:OnSetup()

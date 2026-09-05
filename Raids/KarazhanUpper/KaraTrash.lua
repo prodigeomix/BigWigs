@@ -210,11 +210,13 @@ function module:OnEngage()
 		-- start checking for drake changing targets
 		self:ScheduleRepeatingEvent("bwdraketargetcheck", self.CheckDrakeTarget, 0.2, self)
 		-- don't run forever if this isn't a drake pack
-		self:ScheduleEvent("disable_bwdraketargetcheck", "CancelScheduledEvent", 5, "bwdraketargetcheck")
+		self:ScheduleEvent("disable_bwdraketargetcheck", self.CancelScheduledEvent, 5, self, "bwdraketargetcheck")
 	end
 end
 
 function module:OnDisengage()
+	self:CancelScheduledEvent("bwdraketargetcheck")
+	self:CancelScheduledEvent("disable_bwdraketargetcheck")
 	tracked_guids = {}
 end
 

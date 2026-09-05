@@ -127,6 +127,8 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "Event")--trigger_conflagFade
 	
 	self:ThrottleSync(0.5, syncName.addsDead)
+	self:ThrottleSync(2, syncName.conflag)
+	self:ThrottleSync(2, syncName.conflagFade)
 end
 
 function module:OnSetup()

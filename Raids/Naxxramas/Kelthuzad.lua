@@ -546,6 +546,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "Event") --trigger_bloodTap
 
 
+	self:ThrottleSync(5, syncName.speedRod)
 	self:ThrottleSync(5, syncName.phase2)
 	self:ThrottleSync(5, syncName.phase3)
 	self:ThrottleSync(45, syncName.phase3soon)

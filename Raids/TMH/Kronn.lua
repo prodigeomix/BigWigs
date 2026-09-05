@@ -93,6 +93,8 @@ function module:OnEnable()
 	self:ThrottleSync(1, syncName.dreamHp)
 	self:ThrottleSync(5, syncName.returnBody)
 	self:ThrottleSync(5, syncName.reformBody)
+	self:ThrottleSync(1, syncName.feverGain)
+	self:ThrottleSync(1, syncName.feverFade)
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	self:RegisterEvent("CHAT_MSG_MONSTER_YELL")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "CastEvent") -- TODO: remove if BUFF covers casts properly
@@ -149,23 +151,23 @@ end
 
 function module:AfflictionEvent(msg)
 	if string.find(msg, L["trigger_feverYou"]) then
-		self:Sync(syncName.feverGain..UnitName("player"))
+		self:Sync(syncName.feverGain .. " " .. UnitName("player"))
 		return
 	end
 	local _, _, target = string.find(msg, L["trigger_feverOther"])
 	if target then
-		self:Sync(syncName.feverGain..target)
+		self:Sync(syncName.feverGain .. " " .. target)
 	end
 end
 
 function module:FadeEvent(msg)
 	if string.find(msg, L["trigger_feverFadeYou"]) then
-		self:Sync(syncName.feverFade..UnitName("player"))
+		self:Sync(syncName.feverFade .. " " .. UnitName("player"))
 		return
 	end
 	local _, _, target = string.find(msg, L["trigger_feverFadeOther"])
 	if target then
-		self:Sync(syncName.feverFade..target)
+		self:Sync(syncName.feverFade .. " " .. target)
 	end
 end
 
@@ -364,11 +366,24 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 			self:Sound("Info")
 		end
 	elseif self.db.profile.dreamfever then
-		local _, _, feverTarget = string.find(sync, feverGainPattern)
+		local feverTarget = nil
+		if sync == syncName.feverGain and rest and rest ~= "" then
+			feverTarget = rest
+		else
+			local _, _, t = string.find(sync, feverGainPattern)
+			feverTarget = t
+		end
+
 		if feverTarget then
 			self:FeverGain(feverTarget)
 		else
-			local _, _, fadeTarget = string.find(sync, feverFadePattern)
+			local fadeTarget = nil
+			if sync == syncName.feverFade and rest and rest ~= "" then
+				fadeTarget = rest
+			else
+				local _, _, t = string.find(sync, feverFadePattern)
+				fadeTarget = t
+			end
 			if fadeTarget then
 				self:FeverFade(fadeTarget)
 			end

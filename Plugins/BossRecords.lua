@@ -134,7 +134,7 @@ function BigWigsBossRecords:EndBossfight(module)
 end
 
 function BigWigsBossRecords:FormatTime(time)
-	if not type(time) == "number" then
+	if type(time) ~= "number" then
 		return
 	end
 	--[[

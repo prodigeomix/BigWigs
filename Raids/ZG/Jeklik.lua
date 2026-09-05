@@ -275,6 +275,7 @@ function module:OnEnable()
 	self:ThrottleSync(5, syncName.silence)
 	
 	self:ThrottleSync(5, syncName.swarm)
+	self:ThrottleSync(10, syncName.phase)
 end
 
 function module:OnSetup()

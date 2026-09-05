@@ -238,7 +238,7 @@ function module:DebuffFade(msg)
 	end
 	local _, _, player = string.find(msg, L.trigger_shacklesFade)
 	if player == "you" then
-		self:RemoveBar(string.format(L.bar_shacklesDebuff, player))
+		self:RemoveBar(L.bar_shacklesDebuff)
 		self:RemoveWarningSign(icon.shackles)
 	end
 end

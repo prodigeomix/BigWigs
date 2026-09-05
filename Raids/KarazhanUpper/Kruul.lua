@@ -114,6 +114,8 @@ function module:OnEnable()
 
  -- other syncs will default to 1 second throttle
  self:ThrottleSync(1, syncName.remorselessStrikes)
+ self:ThrottleSync(1, syncName.markofthelord)
+ self:ThrottleSync(1, syncName.markofthelordFade)
 end
 
 function module:OnSetup()
@@ -171,56 +173,63 @@ function module:CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS(msg)
 end
 
 function module:AfflictionEvent(msg)
- -- Mark of the Highlord
- if string.find(msg, L["trigger_markofthelordYou"]) then
-  self:Sync(syncName.markofthelord .. UnitName("player")) -- include player name in sync to throttle for each player
- else
-  local _, _, player = string.find(msg, L["trigger_markofthelordOther"])
-  if player then
-   self:Sync(syncName.markofthelord .. player) -- include player name in sync to throttle for each player
-  end
- end
+	-- Mark of the Highlord
+	if string.find(msg, L["trigger_markofthelordYou"]) then
+		self:Sync(syncName.markofthelord .. " " .. UnitName("player"))
+	else
+		local _, _, player = string.find(msg, L["trigger_markofthelordOther"])
+		if player then
+			self:Sync(syncName.markofthelord .. " " .. player)
+		end
+	end
 end
 
 function module:CHAT_MSG_SPELL_AURA_GONE_SELF(msg)
- if string.find(msg, L["trigger_markofthelordFade"]) then
-  self:Sync(syncName.markofthelordFade .. UnitName("player"))
-  self:RemoveBar(L["bar_markofthelordExpires"])
- end
+	if string.find(msg, L["trigger_markofthelordFade"]) then
+		self:Sync(syncName.markofthelordFade .. " " .. UnitName("player"))
+		self:RemoveBar(L["bar_markofthelordExpires"])
+	end
 end
 
 function module:CHAT_MSG_SPELL_AURA_GONE_OTHER(msg)
- local _, _, player = string.find(msg, L["trigger_markofthelordFadeOther"])
- if player then
-  self:Sync(syncName.markofthelordFade .. player)
- end
+	local _, _, player = string.find(msg, L["trigger_markofthelordFadeOther"])
+	if player then
+		self:Sync(syncName.markofthelordFade .. " " .. player)
+	end
 end
 
 function module:OnFriendlyDeath(msg)
- local _, _, player = string.find(msg, "(.+) dies")
- if player then
-  self:Sync(syncName.markofthelordFade .. player)
- end
+	local _, _, player = string.find(msg, "(.+) dies")
+	if player then
+		self:Sync(syncName.markofthelordFade .. " " .. player)
+	end
 end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
- if sync == syncName.remorselessStrikes then
-  self:RemorselessStrikes()
-  return
- end
+	if sync == syncName.remorselessStrikes then
+		self:RemorselessStrikes()
+		return
+	end
 
- local _, _, markedPlayer = string.find(sync, L["sync_markofthelord"])
+	if sync == syncName.markofthelord and rest and rest ~= "" then
+		self:MarkOfTheLord(rest)
+		return
+	end
+	local _, _, markedPlayer = string.find(sync, L["sync_markofthelord"])
+	if markedPlayer and markedPlayer ~= "" then
+		self:MarkOfTheLord(markedPlayer)
+		return
+	end
 
- if markedPlayer then
-  self:MarkOfTheLord(markedPlayer)
-  return
- end
-
- local _, _, unmarkedPlayer = string.find(sync, L["sync_markofthelordfade"])
- if unmarkedPlayer then
-  self:MarkOfTheLordFade(unmarkedPlayer)
-  return
- end
+	if sync == syncName.markofthelordFade and rest and rest ~= "" then
+		self:MarkOfTheLordFade(rest)
+		return
+	end
+	local _, _, unmarkedPlayer = string.find(sync, L["sync_markofthelordfade"])
+	if unmarkedPlayer and unmarkedPlayer ~= "" then
+		self:MarkOfTheLordFade(unmarkedPlayer)
+		return
+	end
 end
 
 function module:MarkOfTheLord(player)

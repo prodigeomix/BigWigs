@@ -252,6 +252,7 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_MONSTER_YELL") --trigger_engage, trigger_engage1, trigger_feugenDeadYell, trigger_stalaggDeadYell, trigger_polarityShiftAfflic
 	self:RegisterEvent("CHAT_MSG_RAID_BOSS_EMOTE") --trigger_3sec
 	self:RegisterEvent("PLAYER_AURAS_CHANGED")
+	self:RegisterEvent("UNIT_AURA")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "Event") --trigger_polarityShiftCast
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "Event") --trigger_manaBurn, trigger_manaBurn2
 
@@ -624,6 +625,12 @@ end
 
 function module:PLAYER_AURAS_CHANGED(msg)
 	self:Sync(syncName.checkAuras)
+end
+
+function module:UNIT_AURA(unit)
+	if not unit or unit == "player" then
+		self:Sync(syncName.checkAuras)
+	end
 end
 
 function module:CheckAuras(msg)

@@ -135,6 +135,10 @@ function module:OnEnable()
 end
 
 function module:OnSetup()
+	self:ThrottleSync(3, syncName.watch)
+	self:ThrottleSync(3, syncName.watchEnd)
+	self:ThrottleSync(2, syncName.dismember)
+	self:ThrottleSync(10, syncName.p2)
 end
 
 function module:OnEngage()

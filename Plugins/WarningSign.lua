@@ -233,7 +233,7 @@ function BigWigsWarningSign:BigWigs_ShowWarningSign(texturePath, duration, force
 	end
 
 	-- force will overwrite the current icon shown, else it will do nothing
-	if not type(texturePath) == "string" or not type(duration) == "number" then
+	if type(texturePath) ~= "string" or type(duration) ~= "number" then
 		return
 	end
 

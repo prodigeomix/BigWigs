@@ -76,7 +76,7 @@ local deathCount = 0
 
 function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "Event")
-	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PLAYER_DAMAGE", "Event")
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE", "Event")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "Event")
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE")
 	self:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE", "PlayerDamageEvents")
@@ -279,7 +279,7 @@ function module:WarStomp(number)
 end
 
 function module:IdentifyVulnerability(school)
-	if not self.db.profile.vulnerability or not type(school) == "string" then return end
+	if not self.db.profile.vulnerability or type(school) ~= "string" then return end
 	vulnerability = school
 
 	local markIndex = GetRaidTargetIndex("Target")
