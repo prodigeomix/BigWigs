@@ -7,6 +7,7 @@ assert( BigWigs, "BigWigs not found!")
 
 local L = AceLibrary("AceLocale-2.2"):new("BigWigsFrostBlast")
 
+---@type any
 local anchor = nil
 local FrostblastTargets = {}
 

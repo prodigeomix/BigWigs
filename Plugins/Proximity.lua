@@ -22,6 +22,7 @@ local L = AceLibrary("AceLocale-2.2"):new("BigWigsProximity")
 
 local active = false
 local activeModule = nil -- The module we're currently tracking proximity for.
+---@type any
 local anchor = nil
 local lastplayed = 0 -- When we last played an alarm sound for proximity.
 local tooClose = {} -- List of players who are too close.
