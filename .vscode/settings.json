@@ -6,7 +6,9 @@
   ],
   "Lua.diagnostics.disable": [
     "deprecated",
-    "lowercase-global"
+    "lowercase-global",
+    "undefined-field",
+    "need-check-nil"
   ],
   "Lua.diagnostics.globals": [
     "AceLibrary",

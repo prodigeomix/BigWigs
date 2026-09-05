@@ -7,7 +7,9 @@
   ],
   "diagnostics.disable": [
     "deprecated",
-    "lowercase-global"
+    "lowercase-global",
+    "undefined-field",
+    "need-check-nil"
   ],
   "diagnostics.globals": [
     "AceLibrary",

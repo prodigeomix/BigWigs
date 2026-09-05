@@ -38,7 +38,7 @@ local function decToHex(IN)
 	local B, K, OUT, I, D = 16, "0123456789ABCDEF", "", 0, 0
 	while IN > 0 do
 		I = I + 1
-		IN, D = math.floor(IN / B), math.mod(IN, B) + 1
+		IN, D = math.floor(IN / B), mod(IN, B) + 1
 		OUT = string.sub(K, D, D) .. OUT
 	end
 	return OUT
