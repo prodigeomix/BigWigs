@@ -78,7 +78,7 @@ if race ~= 'human' and race ~= 'gnome' and race ~= 'dwarf' and race ~= 'nightelf
 	faction = 'h'
 end
 
-function getFaction(j)
+local function getFaction(j)
 
 	for i = 0, GetNumRaidMembers() do
 		if GetRaidRosterInfo(i) then
@@ -97,11 +97,11 @@ function getFaction(j)
 
 end
 
-function bw_ucFirst(a)
+local function bw_ucFirst(a)
 	return string.upper(string.sub(a, 1, 1)) .. string.lower(string.sub(a, 2, string.len(a)))
 end
 
-function fixBase(f)
+local function fixBase(f)
 	if f == 'lumber mill' then
 		return 'Lumber Mill'
 	end

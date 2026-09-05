@@ -161,7 +161,7 @@ local syncName = {
 
 local balconyPhase = 0
 local bossPos = ''
-bwTimeInRoom = 0
+local bwTimeInRoom = 0
 
 module:RegisterYellEngage(L["trigger_start1"])
 module:RegisterYellEngage(L["trigger_start2"])

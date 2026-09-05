@@ -157,7 +157,9 @@ local syncName = {
 }
 
 local _, playerClass = UnitClass("player")
-bwOssiWeaknessTime = GetTime()
+local bwOssiWeaknessTime = GetTime()
+local bwOssiSupreme = nil
+local bwOssiFirstWarstop = nil
 
 function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "Event")

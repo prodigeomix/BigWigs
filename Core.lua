@@ -1428,8 +1428,8 @@ function BigWigs:RegisterModule(name, module)
 	end
 
 	-- Set up AceConsole
+	local cons
 	if module:IsBossModule() then
-		local cons
 		local revision = type(module.revision) == "number" and module.revision or -1
 		local L2 = AceLibrary("AceLocale-2.2"):new("BigWigs" .. name)
 		if module.toggleoptions then

@@ -148,8 +148,12 @@ local syncName = {
 
 local eruption_count = 1
 local eruption_dir = 1
-bwHeiganTimeFloorStarted = 0
-bwHeiganTimePlatformStarted = 0
+local bwHeiganTimeFloorStarted = 0
+local bwHeiganTimePlatformStarted = 0
+
+local function eruption_help(inp)
+	return ' ' .. inp
+end
 
 module:RegisterYellEngage(L["trigger_engage1"])
 module:RegisterYellEngage(L["trigger_engage2"])
@@ -330,8 +334,4 @@ function module:Eruption()
 		end
 		self:ScheduleEvent("HeiganEruption", self.Eruption, timer.eruption, self)
 	end
-end
-
-function eruption_help(inp)
-	return ' ' .. inp
 end

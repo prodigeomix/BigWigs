@@ -169,9 +169,9 @@ local syncName = {
 }
 
 --module:RegisterYellEngage(L["trigger_engage"])
-bwSolniusEngaged = false
-bwSolniusHardMode = false
-bwSolniusHardModeHardOn = false
+local bwSolniusEngaged = false
+local bwSolniusHardMode = false
+local bwSolniusHardModeHardOn = false
 
 function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "Event")--trigger_solniusSleep

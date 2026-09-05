@@ -391,7 +391,7 @@ function module:CountPlayers()
 	local numHorde = 0
 	local numAlliance = 0
 	for i=1, numScores do
-		name, killingBlows, honorableKills, deaths, honorGained, faction, rank, race, class = GetBattlefieldScore(i);
+		local name, killingBlows, honorableKills, deaths, honorGained, faction, rank, race, class = GetBattlefieldScore(i);
 		if ( faction ) then
 			if ( faction == 0 ) then
 				numHorde = numHorde + 1
