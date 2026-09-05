@@ -122,7 +122,7 @@ L:RegisterTranslations("enUS", function()
 end)
 
 BigWigsCommonAuras = BigWigs:NewModule(name, "AceHook-2.1")
-BigWigsCommonAuras.synctoken = myname
+BigWigsCommonAuras.synctoken = name
 BigWigsCommonAuras.defaultDB = {
 	fearward = true,
 	shieldwall = true,

@@ -496,7 +496,7 @@ function module:CHAT_MSG_MONSTER_YELL(msg, sender)
 end
 
 function module:UNIT_HEALTH(msg)
-	if UnitName(msg) == boss then
+	if UnitName(msg) == module.translatedName then
 		local health = UnitHealth(msg)
 		if health >= 71 and phase ~= 1 then
 			phase = 1

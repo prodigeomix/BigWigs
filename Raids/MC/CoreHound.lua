@@ -47,7 +47,6 @@ L:RegisterTranslations("zhCN", function() return {
     bar_respawn = "重生",
     msg_respawn = "在10秒内杀死所有熔火恶犬",
 
-    ["You have slain %s!"] = true,
     ["You have slain %s!"] = "你击杀了 %s！",
 } end )
 

@@ -232,12 +232,12 @@ end
 function module:AbilityWarn(ability)
 	firstAbilityFound = true
 	if ability == "Fear" then
-		self:Message(L["msg_foundFear"], Important, false, nil, false)
+		self:Message(L["msg_foundFear"], "Important", false, nil, false)
 	elseif ability == "Silence" then
-		self:Message(L["msg_foundSilence"], Important, false, nil, false)
+		self:Message(L["msg_foundSilence"], "Important", false, nil, false)
 	elseif ability == "Roots" then
-		self:Message(L["msg_foundRoots"], Important, false, nil, false)
+		self:Message(L["msg_foundRoots"], "Important", false, nil, false)
 	elseif ability == "Dust" then
-		self:Message(L["msg_foundDust"], Important, false, nil, false)
+		self:Message(L["msg_foundDust"], "Important", false, nil, false)
 	end
 end

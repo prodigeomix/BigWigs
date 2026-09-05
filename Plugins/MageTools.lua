@@ -563,7 +563,7 @@ BigWigsMageTools.consoleOptions = {
 				BigWigsMageTools.db.profile.ignitedroprequest = v
 			end,
 		},
-		spacer = {
+		spacer2 = {
 			type = "header",
 			name = " ",
 			order = 17,

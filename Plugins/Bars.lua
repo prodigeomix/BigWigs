@@ -758,7 +758,7 @@ function BigWigsBars:BigWigs_StopBar(module, text)
 	module:UnregisterCandyBar("BigWigsBar " .. text)
 end
 
-function BigWigsBars:BigWigs_UpdateBar(module, barName, value, text, paused)
+function BigWigsBars:BigWigs_UpdateBar(module, barName, value, text, paused, color, timeFormat)
 	if not barName then
 		return
 	end
@@ -1136,7 +1136,8 @@ function BigWigsBars:UpdateBars()
 
 	if self.frames.emphasizeAnchor then
 		for bar, opt in pairs(self.frames.emphasizeAnchor.movingBars) do
-			local stop, scale = opt.stop
+			local stop = opt.stop
+			local scale
 			count = count + 1
 			if stop < now then
 				self.frames.emphasizeAnchor.movingBars[bar] = del(self.frames.emphasizeAnchor.movingBars[bar])
@@ -1203,8 +1204,8 @@ function BigWigsBars:EmphasizeBar(module, id)
 
 	self.frames.emphasizeAnchor.movingBars[id] = new()
 	self.frames.emphasizeAnchor.movingBars[id].stop = GetTime() + self.db.profile.duration
-	self.frames.emphasizeAnchor.movingBars[id].targetX = (targetX * (UIParent:GetEffectiveScale() * db.emphasizeScale or 1)) + (frameX * frameScale)
-	self.frames.emphasizeAnchor.movingBars[id].targetY = (targetY * (UIParent:GetEffectiveScale() * db.emphasizeScale or 1)) + ((frameY + offsetY) * frameScale)
+	self.frames.emphasizeAnchor.movingBars[id].targetX = (targetX * (UIParent:GetEffectiveScale() * (db.emphasizeScale or 1))) + (frameX * frameScale)
+	self.frames.emphasizeAnchor.movingBars[id].targetY = (targetY * (UIParent:GetEffectiveScale() * (db.emphasizeScale or 1))) + ((frameY + offsetY) * frameScale)
 	self.frames.emphasizeAnchor.movingBars[id].startScale = db.scale or 1
 	self.frames.emphasizeAnchor.movingBars[id].stopScale = db.emphasizeScale or 1
 end

@@ -183,7 +183,7 @@ function string:split(delimiter)
 end
 
 BigWigsSpellRequests = BigWigs:NewModule(name)
-BigWigsSpellRequests.synctoken = myname
+BigWigsSpellRequests.synctoken = name
 BigWigsSpellRequests.defaultDB = {
 	enabled = true,
 	barDuration = 5,

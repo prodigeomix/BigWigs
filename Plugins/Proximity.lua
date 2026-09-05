@@ -35,7 +35,7 @@ local hexColors = {}
 
 -- Function decToHex (renamed, updated): http://lua-users.org/lists/lua-l/2004-09/msg00054.html
 local function decToHex(IN)
-	local B, K, OUT, I, D = 16, "0123456789ABCDEF", "", 0
+	local B, K, OUT, I, D = 16, "0123456789ABCDEF", "", 0, 0
 	while IN > 0 do
 		I = I + 1
 		IN, D = math.floor(IN / B), math.mod(IN, B) + 1

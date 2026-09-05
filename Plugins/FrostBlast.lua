@@ -168,7 +168,7 @@ BigWigsFrostBlast.consoleOptions = {
 			get = function() return BigWigsFrostBlast.db.profile.bars end,
 			set = function(v) BigWigsFrostBlast.db.profile.bars = v end,
 		},
-		spacer = {
+		spacer2 = {
 			type = "header",
 			name = " ",
 			order = 113,

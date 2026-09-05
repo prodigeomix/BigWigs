@@ -284,7 +284,7 @@ end
 
 function module:OnEngage()
 	self:Bar("Target Andorov", 3600, icon.eventStart, true, "Cyan")
-	self:SetCandyBarOnClick("BigWigsBar ".."Target Andorov", function(name, button, extra) TargetByName("Lieutenant General Andorov", true) end, rest)
+	self:SetCandyBarOnClick("BigWigsBar ".."Target Andorov", function(name, button, extra) TargetByName("Lieutenant General Andorov", true) end, "Lieutenant General Andorov")
 end
 
 function module:OnDisengage()

@@ -40,7 +40,7 @@ end)
 ------------------------------
 
 BigWigsCombatAnnouncement = BigWigs:NewModule(name, "AceHook-2.1")
-BigWigsCombatAnnouncement.synctoken = myname
+BigWigsCombatAnnouncement.synctoken = name
 
 local RaidMarkerIndexToText = {
 	[1] = "(Star)",

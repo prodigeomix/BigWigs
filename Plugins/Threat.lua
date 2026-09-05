@@ -217,7 +217,7 @@ end
 function BigWigsThreat:explode(str, delimiter)
 	local result = {}
 	local from = 1
-	local delim_from, delim_to = string.find(str, delimiter, from, 1, true)
+	local delim_from, delim_to = string.find(str, delimiter, from, true)
 	while delim_from do
 		table.insert(result, string.sub(str, from, delim_from - 1))
 		from = delim_to + 1
