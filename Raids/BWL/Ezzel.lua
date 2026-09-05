@@ -216,6 +216,7 @@ function module:CheckBossHealth(testValue)
 end
 
 function module:Test()
+	BigWigs:ToggleActive(true)
 	self:Engage()
 	
 	-- test characters

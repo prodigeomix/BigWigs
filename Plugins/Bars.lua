@@ -468,7 +468,7 @@ end
 function BigWigsBars:OnDisable()
 	self:BigWigs_HideAnchors()
 
-	if self.frames.emphasizeAnchor then
+	if self.frames and self.frames.emphasizeAnchor then
 		self.frames.emphasizeAnchor.flashTimers = del(self.frames.emphasizeAnchor.flashTimers)
 		self.frames.emphasizeAnchor.emphasizeTimers = del(self.frames.emphasizeAnchor.emphasizeTimers)
 		self.frames.emphasizeAnchor.moduleBars = del(self.frames.emphasizeAnchor.moduleBars)
@@ -483,7 +483,8 @@ end
 local barCache = {-- [i] = {text, module}
 }
 function BigWigsBars:Disable(module)
-	if self.frames.emphasizeAnchor and self.frames.emphasizeAnchor.moduleBars[module] then
+	if not self.frames then return end
+	if self.frames.emphasizeAnchor and self.frames.emphasizeAnchor.moduleBars and self.frames.emphasizeAnchor.moduleBars[module] then
 		if self.frames.emphasizeAnchor.emphasizeTimers[module] then
 			for k, v in pairs(self.frames.emphasizeAnchor.emphasizeTimers[module]) do
 				self:CancelScheduledEvent(v)

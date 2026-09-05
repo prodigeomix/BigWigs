@@ -609,6 +609,10 @@ end
 function BigWigs.modulePrototype:Engage()
 	self:DebugMessage("Engage() " .. self:ToString())
 
+	if not BigWigs:IsActive() then
+		BigWigs:ToggleActive(true)
+	end
+
 	if not BigWigs:IsModuleActive(self) then
 		BigWigs:EnableModule(self:ToString())
 	end
