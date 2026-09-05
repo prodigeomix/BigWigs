@@ -1370,7 +1370,7 @@ function BigWigs:ADDON_LOADED(addon)
 end
 
 function BigWigs:ModuleDeclaration(bossName, zoneName)
-	translatedName = BB:HasTranslation(bossName) and BB[bossName] or bossName
+	local translatedName = BB:HasTranslation(bossName) and BB[bossName] or bossName
 	local module = BigWigs:NewModule(translatedName)
 	local L = AceLibrary("AceLocale-2.2"):new("BigWigs" .. translatedName)
 	module.translatedName = translatedName
@@ -2020,23 +2020,24 @@ function BigWigs:AuraIsPresent(unitId, spellId)
 	return BigWigs:DebuffIsPresent(unitId, spellId) or BigWigs:BuffIsPresent(unitId, spellId)
 end
 
+local castDebuffs = {
+	[1] = {11719, 1.6, 1}, -- Curse of Tongues Rank 2
+	[2] = {1714, 1.5, 0},  -- Curse of Tongues Rank 1
+	[3] = {11398, 1.6, 2}, -- Mind-numbing Poison III
+	[4] = {8692, 1.5, 1},  -- Mind-numbing Poison II
+	[5] = {5760, 1.4, 0},  -- Mind-numbing Poison I
+}
+
 function BigWigs:GetCastTimeCoefficient(unitId)
-	local debuffs = {
-		[1] = {11719, 1.6, 1}, -- Curse of Tongues Rank 2
-		[2] = {1714, 1.5, 0}, -- Curse of Tongues Rank 1
-		[3] = {11398, 1.6, 2}, -- Mind-numbing Poison III
-		[4] = {8692, 1.5, 1}, -- Mind-numbing Poison II
-		[5] = {5760, 1.4, 0}, -- Mind-numbing Poison I
-	}
 	local coefficient = 1
 	
 	if UnitExists(unitId) then
 		local i = 1
-		local n = table.getn(debuffs)
+		local n = table.getn(castDebuffs)
 		while i <= n do
-			if BigWigs:AuraIsPresent(unitId, debuffs[i][1]) then
-				coefficient = coefficient * debuffs[i][2]
-				i = i + debuffs[i][3]
+			if BigWigs:AuraIsPresent(unitId, castDebuffs[i][1]) then
+				coefficient = coefficient * castDebuffs[i][2]
+				i = i + castDebuffs[i][3]
 			end
 			i = i + 1
 		end

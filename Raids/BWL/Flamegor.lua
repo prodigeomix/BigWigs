@@ -197,7 +197,7 @@ end
 
 function module:FadesEvent(msg)
 	if msg == L["trigger_frenzyFade"] then
-		self:Sync(syncName.mcFade)
+		self:Sync(syncName.frenzyFade)
 	end
 	
 	local _, _, player = string.find(msg, L["trigger_mcFade"])

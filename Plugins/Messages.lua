@@ -228,6 +228,7 @@ end)
 ----------------------------------
 
 BigWigsMessages = BigWigs:NewModule(L["Messages"])
+BigWigsMessages.frames = {}
 BigWigsMessages.defaultDB = {
 	display = L["BigWigs frame"],
 	usecolors = true,

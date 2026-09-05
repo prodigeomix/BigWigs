@@ -178,6 +178,7 @@ end)
 
 BigWigsBars = BigWigs:NewModule(L["Bars"])
 BigWigsBars.revision = tonumber(string.sub("$Revision: 20004 $", 12, -3))
+BigWigsBars.frames = {}
 BigWigsBars.defaultDB = {
 	growup = false,
 	scale = 1.0,
@@ -511,11 +512,10 @@ function BigWigsBars:Disable(module)
 			self:CancelScheduledEvent("BigWigsBarMover")
 		end
 	else
-		for i = 1, table.getn(barCache) do
+		for i = table.getn(barCache), 1, -1 do
 			if barCache[i] and barCache[i][2] == module then
 				BigWigsBars:BigWigs_StopBar(barCache[i][2], barCache[i][1])
 				tremove(barCache, i)
-				i = i - 1
 			end
 		end
 		--barCache = {}
@@ -527,6 +527,9 @@ function BigWigsBars:Ace2_AddonDisabled(module)
 end
 
 function BigWigsBars:BigWigs_ShowAnchors()
+	if not self.frames then
+		self.frames = {}
+	end
 	if not self.frames.anchor then
 		self:SetupFrames()
 	end
@@ -541,7 +544,7 @@ function BigWigsBars:BigWigs_ShowAnchors()
 end
 
 function BigWigsBars:BigWigs_HideAnchors()
-	if not self.frames.anchor then
+	if not self.frames or not self.frames.anchor then
 		return
 	end
 	self.frames.anchor:Hide()
@@ -557,6 +560,9 @@ function BigWigsBars:BigWigs_StartBar(module, text, time, icon, otherc, c1, c2, 
 	end
 	local id = "BigWigsBar " .. text
 	if emphasize == nil then emphasize = true end
+	if not self.frames then
+		self.frames = {}
+	end
 	if not self.frames.anchor then
 		self:SetupFrames()
 	end
@@ -724,7 +730,7 @@ function BigWigsBars:BigWigs_StopBar(module, text)
 	if not text and type(text) ~= "string" then
 		return
 	end
-	if self.frames.emphasizeAnchor and self.frames.emphasizeAnchor.moduleBars[module] then
+	if self.frames and self.frames.emphasizeAnchor and self.frames.emphasizeAnchor.moduleBars and self.frames.emphasizeAnchor.moduleBars[module] then
 		local id = "BigWigsBar " .. text
 
 		if self.frames.emphasizeAnchor.movingBars[id] then
@@ -1229,6 +1235,9 @@ end
 -- Create the Anchor     --
 ------------------------------
 function BigWigsBars:SetupFrames(emphasize)
+	if not self.frames then
+		self.frames = {}
+	end
 	if not self.db.profile.emphasize and self.frames.anchor then
 		return
 	end

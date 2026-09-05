@@ -148,6 +148,8 @@ function module:OnSetup()
 end
 
 function module:OnEngage()
+	zoneWarned = false
+
 	if self.db.profile.wingbuffet then
 		self:Bar(L["bar_wingBuffetCd"], timer.wingBuffetFirstCd, icon.wingBuffet, true, color.wingBuffetCd)
 		self:DelayedMessage(timer.wingBuffetFirstCd - 2, L["msg_wingBuffetSoon"], "Attention", false, nil, false)

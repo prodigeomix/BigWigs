@@ -62,6 +62,8 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE", "AfflictionEvent")
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE", "AfflictionEvent")
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE", "AfflictionEvent") -- for pets
+
+	self:ThrottleSync(1, syncName.fire)
 end
 
 function module:OnSetup()
@@ -77,12 +79,16 @@ function module:AfflictionEvent(msg)
 	local _, _, player = string.find(msg, L["trigger_fire"])
 	if player then
 		player = player == "You" and UnitName("player") or player
-		self:Sync(syncName.fire .. player) -- bake player into sync name to throttle per player
+		self:Sync(syncName.fire .. " " .. player)
 		return
 	end
 end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
+	if sync == syncName.fire and rest then
+		self:AlchemistsFire(rest)
+		return
+	end
 	local _, _, player = string.find(sync, syncName.fire .. "(.+)")
 	if player then
 		self:AlchemistsFire(player)

@@ -95,6 +95,7 @@ end)
 ----------------------------------
 
 BigWigsWarningSign = BigWigs:NewModule(name)
+BigWigsWarningSign.frames = {}
 BigWigsWarningSign.defaultDB = {
 	posx = 800,
 	posy = 645,
@@ -549,7 +550,7 @@ function BigWigsWarningSign:SavePosition()
 	self.db.profile.posx = BigWigsWarningSign.frame:GetLeft() * s
 	self.db.profile.posy = BigWigsWarningSign.frame:GetTop() * s]]
 
-	if not BigWigsWarningSign.frames.anchor then
+	if not self.frames or not self.frames.anchor then
 		self:SetupFrames()
 	end
 

@@ -160,6 +160,9 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "CastEvent")
 	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF", "CastEvent")
 
+	self:ThrottleSync(1, syncName.defiler_defiling)
+	self:ThrottleSync(1, syncName.corruption_boils)
+	self:ThrottleSync(1, syncName.trickster_siphon)
 	self:ThrottleSync(1, syncName.pathfinder_illumination)
 	self:ThrottleSync(1, syncName.ursa_command)
 	self:ThrottleSync(1, syncName.son_rage)
@@ -192,21 +195,21 @@ function module:AfflictionEvent(msg)
 	local _, _, player = string.find(msg, L["trigger_defiler_defiling"])
 	if player then
 		player = player == "You" and UnitName("player") or player
-		self:Sync(syncName.defiler_defiling .. player) -- bake player into sync name to throttle per player
+		self:Sync(syncName.defiler_defiling .. " " .. player)
 		return
 	end
 
 	local _, _, player = string.find(msg, L["trigger_corruption_boils"])
 	if player then
 		player = player == "You" and UnitName("player") or player
-		self:Sync(syncName.corruption_boils .. player) -- bake player into sync name to throttle per player
+		self:Sync(syncName.corruption_boils .. " " .. player)
 		return
 	end
 
 	local _, _, player = string.find(msg, L["trigger_trickster_siphon"])
 	if player then
 		player = player == "You" and UnitName("player") or player
-		self:Sync(syncName.trickster_siphon .. player) -- bake player into sync name to throttle per player
+		self:Sync(syncName.trickster_siphon .. " " .. player)
 		return
 	end
 end
@@ -229,7 +232,7 @@ function module:EnemyBuffEvent(msg)
 	end
 	local _, _, pet = string.find(msg, L["trigger_defiler_defiling"])
 	if pet then
-		self:Sync(syncName.defiler_defiling .. pet) -- bake pet into sync name to throttle per pet
+		self:Sync(syncName.defiler_defiling .. " " .. pet)
 		return
 	end
 end
@@ -245,14 +248,26 @@ function module:CastEvent(msg)
 end
 
 function module:BigWigs_RecvSync(sync, rest, nick)
+	if sync == syncName.defiler_defiling and rest then
+		self:WitheredDefiling(rest)
+		return
+	end
 	local _, _, player = string.find(sync, syncName.defiler_defiling .. "(.+)")
 	if player then
 		self:WitheredDefiling(player)
 		return
 	end
+	if sync == syncName.corruption_boils and rest and self.db.profile.corruption_boils then
+		self:Message(string.format(L["msg_corruption_boils"],rest), "Attention")
+		return
+	end
 	local _, _, player = string.find(sync, syncName.corruption_boils .. "(.+)")
 	if player and self.db.profile.corruption_boils then
 		self:Message(string.format(L["msg_corruption_boils"],player), "Attention")
+		return
+	end
+	if sync == syncName.trickster_siphon and rest and self.db.profile.trickster_siphon then
+		self:Message(string.format(L["msg_trickster_siphon"],rest), "Attention")
 		return
 	end
 	local _, _, player = string.find(sync, syncName.trickster_siphon .. "(.+)")
