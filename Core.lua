@@ -336,13 +336,186 @@ BigWigs.cmdtable = {
 			disabled = function()
 				return not BigWigs:IsActive()
 			end,
-		}
+		},
+		["priest"] = {
+			type = "execute",
+			name = "Priest Healer Profile",
+			order = 5,
+			desc = "Optimize BigWigs for Priest Healers (compact bars, no screen flash, clutter disabled).",
+			func = function()
+				BigWigs:OptimizeHealerProfile()
+			end,
+		},
+		["test"] = {
+			type = "execute",
+			name = "Test / Preview",
+			order = 6,
+			desc = "Start or stop a test of BigWigs timer bars, messages, and warning icons.",
+			func = function()
+				if not BigWigs:IsModuleActive("Test") and BigWigs:HasModule("Test") then
+					BigWigs:ToggleModuleActive("Test", true)
+				end
+				if BigWigsTest and BigWigsTest.BigWigs_Test then
+					BigWigsTest:BigWigs_Test()
+				else
+					BigWigs:TriggerEvent("BigWigs_Test")
+				end
+			end,
+		},
+		["preview"] = {
+			type = "execute",
+			name = "Preview Bars & Layout",
+			order = 7,
+			desc = "Preview timer bars, messages, and layout.",
+			func = function()
+				if not BigWigs:IsModuleActive("Test") and BigWigs:HasModule("Test") then
+					BigWigs:ToggleModuleActive("Test", true)
+				end
+				if BigWigsTest and BigWigsTest.BigWigs_Test then
+					BigWigsTest:BigWigs_Test()
+				else
+					BigWigs:TriggerEvent("BigWigs_Test")
+				end
+			end,
+		},
 	}
 }
 BigWigs:RegisterChatCommand({ "/bw", "/BigWigs" }, BigWigs.cmdtable)
 BigWigs.debugFrame = ChatFrame1
 BigWigs.revision = tonumber(GetAddOnMetadata("BigWigs", "X-Revision")) or 0
 BigWigs.markUnitsWhenNotRaidLeader = false -- too many people marking causes issues, can turn on if needed
+
+function BigWigs:OptimizeHealerProfile()
+	if not self:IsActive() then
+		self:ToggleActive(true)
+	end
+
+	-- 1. Configure Bars: compact, clean anchor, no screen flashes, no jumping
+	if BigWigsBars and BigWigsBars.db and BigWigsBars.db.profile then
+		BigWigsBars.db.profile.scale = 0.85
+		BigWigsBars.db.profile.width = 185
+		BigWigsBars.db.profile.height = 14
+		BigWigsBars.db.profile.growup = false
+		BigWigsBars.db.profile.texture = "BantoBar"
+		BigWigsBars.db.profile.posx = 960
+		BigWigsBars.db.profile.posy = 700
+		BigWigsBars.db.profile.emphasize = true
+		BigWigsBars.db.profile.emphasizeMove = false
+		BigWigsBars.db.profile.emphasizeFlash = false
+		BigWigsBars.db.profile.emphasizeScale = 1.05
+		BigWigsBars.db.profile.duration = 0.5
+		BigWigsBars.db.profile.intervalbar = true
+		if BigWigsBars.frames and BigWigsBars.frames.anchor then
+			BigWigsBars.frames.anchor:ClearAllPoints()
+			BigWigsBars.frames.anchor:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 960, 700)
+		end
+	end
+
+	-- 2. Configure Messages: compact, clean top-center anchor
+	if BigWigsMessages and BigWigsMessages.db and BigWigsMessages.db.profile then
+		BigWigsMessages.db.profile.scale = 0.85
+		BigWigsMessages.db.profile.usecolors = true
+		BigWigsMessages.db.profile.posx = 650
+		BigWigsMessages.db.profile.posy = 720
+		if BigWigsMessages.frames and BigWigsMessages.frames.anchor then
+			BigWigsMessages.frames.anchor:ClearAllPoints()
+			BigWigsMessages.frames.anchor:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 650, 720)
+		end
+		if BigWigsMessages.msgframe then
+			BigWigsMessages.msgframe:SetScale(0.85)
+		end
+	end
+
+	-- 3. Configure Common Auras: keep tank & dispel defensives, silence toy & portal spam
+	if BigWigsCommonAuras and BigWigsCommonAuras.db and BigWigsCommonAuras.db.profile then
+		local cap = BigWigsCommonAuras.db.profile
+		cap.fearward = true
+		cap.shieldwall = true
+		cap.laststand = true
+		cap.lifegivinggem = true
+		cap.challengingshout = true
+		cap.challengingroar = true
+		cap.spiritlink = true
+		cap.di = true
+		cap.bop = true
+		cap.powerinfusion = true
+		cap.lip = true
+		cap.portal = false
+		cap.wormhole = false
+		cap.orange = false
+		cap.soulwell = false
+		cap.shutdown = false
+		cap.invis = false
+		cap.deepwood = false
+		cap.broadcast = false
+		cap.aq40artifact = false
+		cap.aq40insignia = false
+	end
+
+	-- 4. Configure BossBlock: suppress chat and emote clutter during encounters
+	if BigWigsBossBlock and BigWigsBossBlock.db and BigWigsBossBlock.db.profile then
+		local bbp = BigWigsBossBlock.db.profile
+		bbp.hideraidchat = true
+		bbp.hideraidwarnchat = true
+		bbp.hideraidwarn = true
+		bbp.hideraidsay = true
+		bbp.hidetells = true
+	end
+
+	-- 5. Configure Spell Requests: disable floating button frames
+	if BigWigsSpellRequests and BigWigsSpellRequests.db and BigWigsSpellRequests.db.profile then
+		local srp = BigWigsSpellRequests.db.profile
+		srp.showrequestsframe = false
+		srp.showcooldownsframe = false
+		srp.barDuration = 4
+	end
+
+	-- 6. Configure Warning Sign: compact and clean
+	if BigWigsWarningSign and BigWigsWarningSign.db and BigWigsWarningSign.db.profile then
+		local wsp = BigWigsWarningSign.db.profile
+		wsp.scale = 0.65
+		wsp.alpha = 0.75
+		wsp.posx = 640
+		wsp.posy = 560
+	end
+
+	-- 7. Disable noisy non-healer plugins
+	local noiseModules = {
+		"MageTools",
+		"Tranq",
+		"Zombie Food",
+		"Target Monitor",
+		"Threat",
+		"Resist Check",
+		"RaidOfficer",
+		"Combat Announcement",
+	}
+	for _, modName in ipairs(noiseModules) do
+		if self:HasModule(modName) and self:IsModuleActive(modName) then
+			self:ToggleModuleActive(modName, false)
+		end
+	end
+
+	-- 8. Ensure essential plugins are active
+	local essentialPlugins = {
+		"Bars",
+		"Messages",
+		"Colors",
+		"Sounds",
+		"BossBlock",
+		"Common Auras",
+		"WarningSign",
+		"Range",
+		"Proximity",
+	}
+	for _, plugName in ipairs(essentialPlugins) do
+		if self:HasModule(plugName) and not self:IsModuleActive(plugName) then
+			self:ToggleModuleActive(plugName, true)
+		end
+	end
+
+	DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[BigWigs]|r Profile optimized for |cffffd100Priest Healer|r! Visual clutter reduced, timers slimmed, and screen flashes disabled.")
+end
 
 function BigWigs:EditLayout()
 	BigWigsBars:BigWigs_ShowAnchors()

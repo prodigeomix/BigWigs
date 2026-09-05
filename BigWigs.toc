@@ -170,7 +170,6 @@ Raids\Other\Lethon.lua
 Raids\Other\Taerar.lua
 Raids\Other\Ysondre.lua
 Raids\Other\Kazzak.lua
-Raids\Other\Nerubian.lua
 Raids\Other\DarkReaverOfKarazhan.lua
 Raids\Other\NerubianOverseer.lua
 Raids\Other\TwilightCorrupter.lua

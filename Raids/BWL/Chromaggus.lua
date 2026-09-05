@@ -516,18 +516,6 @@ function module:Vulnerability(rest)
 	
 	if rest == "???" then
 		vulnerabilityResetTime = GetTime()
-		
-		breathA = true
-	end
-end
-
-function module:Vulnerability(rest)
-	self:RemoveBar(currentVulnerability..L["bar_vulnerability"])
-	
-	currentVulnerability = rest
-	
-	if rest == "???" then
-		vulnerabilityResetTime = GetTime()
 	elseif (GetTime() > (vulnerabilityResetTime + 3)) then
 		if currentVulnerability == "Arcane" then
 			icon.vulnerability = icon.vulnerability_arcane
