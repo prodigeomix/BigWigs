@@ -155,6 +155,8 @@ L:RegisterTranslations("enUS", function() return {
 	trigger_classCall_Warlock = "Warlocks, you shouldn't be playing with magic you don't understand. See what happens%?", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Warrior = "Warriors, I know you can hit harder than that! Lets see it!", --CHAT_MSG_MONSTER_YELL
 	
+	bar_classCall = "Class Call",
+	bar_classCallSingle = "%s Class Call",
 	bar_classCallPair = "%s & %s Class Call",
 	bar_classCallFirst = "First Class Call",
 	bar_classCallSoon = "Class Call Soon",
@@ -318,8 +320,18 @@ local syncName = {
 	curse = "NefarianCurse"..module.revision,
 	curseFade = "NefarianCurseFade"..module.revision,
 
+	classCall = "NefarianClassCall"..module.revision,
 	classCallA = "NefarianClassCallA"..module.revision,
 	classCallB = "NefarianClassCallB"..module.revision,
+	classCall_Druid = "NefCallDruid"..module.revision,
+	classCall_Hunter = "NefCallHunter"..module.revision,
+	classCall_Mage = "NefCallMage"..module.revision,
+	classCall_Paladin = "NefCallPaladin"..module.revision,
+	classCall_Priest = "NefCallPriest"..module.revision,
+	classCall_Rogue = "NefCallRogue"..module.revision,
+	classCall_Shaman = "NefCallShaman"..module.revision,
+	classCall_Warlock = "NefCallWarlock"..module.revision,
+	classCall_Warrior = "NefCallWarrior"..module.revision,
 
 	wildPolymorph = "NefarianWildPolymorph"..module.revision,
 	wildPolymorphFade = "NefarianWildPolymorphFade"..module.revision,
@@ -329,6 +341,18 @@ local syncName = {
 	lowHp = "NefarianLowHp"..module.revision,
 
 	boneConstructs = "NefarianBoneConstructs"..module.revision,
+}
+
+local classCallSyncs = {
+	[syncName.classCall_Druid] = "DRUID",
+	[syncName.classCall_Hunter] = "HUNTER",
+	[syncName.classCall_Mage] = "MAGE",
+	[syncName.classCall_Paladin] = "PALADIN",
+	[syncName.classCall_Priest] = "PRIEST",
+	[syncName.classCall_Rogue] = "ROGUE",
+	[syncName.classCall_Shaman] = "SHAMAN",
+	[syncName.classCall_Warlock] = "WARLOCK",
+	[syncName.classCall_Warrior] = "WARRIOR",
 }
 local spellId = {
 	shadowFlame = 22539,
@@ -344,8 +368,9 @@ local blueFound = nil
 local greenFound = nil
 local blackFound = nil
 local bronzeFound = nil
-local lastClassCall = 0
-local classA = ""
+local currentClassA = nil
+local currentClassB = nil
+local classCallTime = 0
 
 function module:OnEnable()
 	--self:RegisterEvent("CHAT_MSG_SAY", "Event") --Debug
@@ -397,6 +422,17 @@ function module:OnEnable()
 	self:ThrottleSync(3, syncName.curse)
 	self:ThrottleSync(3, syncName.curseFade)
 
+	self:ThrottleSync(5, syncName.classCall_Druid)
+	self:ThrottleSync(5, syncName.classCall_Hunter)
+	self:ThrottleSync(5, syncName.classCall_Mage)
+	self:ThrottleSync(5, syncName.classCall_Paladin)
+	self:ThrottleSync(5, syncName.classCall_Priest)
+	self:ThrottleSync(5, syncName.classCall_Rogue)
+	self:ThrottleSync(5, syncName.classCall_Shaman)
+	self:ThrottleSync(5, syncName.classCall_Warlock)
+	self:ThrottleSync(5, syncName.classCall_Warrior)
+
+	self:ThrottleSync(0, syncName.classCall)
 	self:ThrottleSync(3, syncName.classCallA)
 	self:ThrottleSync(3, syncName.classCallB)
 
@@ -426,6 +462,9 @@ function module:OnEngage()
 	greenFound = nil
 	blackFound = nil
 	bronzeFound = nil
+	currentClassA = nil
+	currentClassB = nil
+	classCallTime = 0
 
 	self:Bar(L["bar_mobsSpawn"], timer.mobSpawn, icon.phase, true, color.phase)
 
@@ -436,6 +475,16 @@ function module:OnEngage()
 end
 
 function module:OnDisengage()
+	if currentClassA then
+		self:RemoveBar(string.format(L["bar_classCallSingle"], L[currentClassA]))
+		if currentClassB then
+			self:RemoveBar(string.format(L["bar_classCallPair"], L[currentClassA], L[currentClassB]))
+		end
+	end
+	self:RemoveBar(L["bar_classCallFirst"])
+	self:CancelDelayedBar(L["bar_classCallSoon"])
+	self:RemoveBar(L["bar_classCallSoon"])
+	self:CancelDelayedMessage(L["msg_classCall_soon3"])
 end
 
 function module:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
@@ -480,23 +529,23 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 	elseif string.find(msg, L["trigger_landingNow"]) then
 		self:Sync(syncName.landingNow)
 
-	elseif string.find(msg, L["trigger_classCall_Druid"]) then
+	elseif string.find(msg, L["trigger_classCall_Druid"]) or string.find(msg, "Druids and your silly") then
 		self:SyncClassCall("DRUID")
-	elseif string.find(msg, L["trigger_classCall_Hunter"]) then
+	elseif string.find(msg, L["trigger_classCall_Hunter"]) or string.find(msg, "Hunters") then
 		self:SyncClassCall("HUNTER")
-	elseif string.find(msg, L["trigger_classCall_Mage"]) then
+	elseif string.find(msg, L["trigger_classCall_Mage"]) or string.find(msg, "Mages too") then
 		self:SyncClassCall("MAGE")
-	elseif string.find(msg, L["trigger_classCall_Paladin"]) then
+	elseif string.find(msg, L["trigger_classCall_Paladin"]) or string.find(msg, "Paladins") then
 		self:SyncClassCall("PALADIN")
-	elseif string.find(msg, L["trigger_classCall_Priest"]) then
+	elseif string.find(msg, L["trigger_classCall_Priest"]) or string.find(msg, "Priests!") then
 		self:SyncClassCall("PRIEST")
-	elseif string.find(msg, L["trigger_classCall_Rogue"]) then
+	elseif string.find(msg, L["trigger_classCall_Rogue"]) or string.find(msg, "Rogues") then
 		self:SyncClassCall("ROGUE")
-	elseif string.find(msg, L["trigger_classCall_Shaman"]) then
+	elseif string.find(msg, L["trigger_classCall_Shaman"]) or string.find(msg, "Shamans") then
 		self:SyncClassCall("SHAMAN")
-	elseif string.find(msg, L["trigger_classCall_Warlock"]) then
+	elseif string.find(msg, L["trigger_classCall_Warlock"]) or string.find(msg, "Warlocks") then
 		self:SyncClassCall("WARLOCK")
-	elseif string.find(msg, L["trigger_classCall_Warrior"]) then
+	elseif string.find(msg, L["trigger_classCall_Warrior"]) or string.find(msg, "Warriors") then
 		self:SyncClassCall("WARRIOR")
 
 	elseif msg == L["trigger_boneConstructs"] then
@@ -505,12 +554,28 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 end
 
 function module:SyncClassCall(class)
-	if lastClassCall + 3 < GetTime() then
-		self:Sync(syncName.classCallA.." "..class)
+	if not class then return end
+	if class == "DRUID" then
+		self:Sync(syncName.classCall_Druid)
+	elseif class == "HUNTER" then
+		self:Sync(syncName.classCall_Hunter)
+	elseif class == "MAGE" then
+		self:Sync(syncName.classCall_Mage)
+	elseif class == "PALADIN" then
+		self:Sync(syncName.classCall_Paladin)
+	elseif class == "PRIEST" then
+		self:Sync(syncName.classCall_Priest)
+	elseif class == "ROGUE" then
+		self:Sync(syncName.classCall_Rogue)
+	elseif class == "SHAMAN" then
+		self:Sync(syncName.classCall_Shaman)
+	elseif class == "WARLOCK" then
+		self:Sync(syncName.classCall_Warlock)
+	elseif class == "WARRIOR" then
+		self:Sync(syncName.classCall_Warrior)
 	else
-		self:Sync(syncName.classCallB.." "..class)
+		self:Sync(syncName.classCall .. " " .. class)
 	end
-	lastClassCall = GetTime()
 end
 
 function module:PLAYER_TARGET_CHANGED()
@@ -590,6 +655,19 @@ function module:Event(msg)
 
 	elseif string.find(msg, L["trigger_corruptedHealing"]) then
 		self:Sync(syncName.corruptedHealing)
+		if phase == "phase2" and currentClassA ~= "PRIEST" and currentClassB ~= "PRIEST" then
+			self:SyncClassCall("PRIEST")
+		end
+
+	elseif string.find(msg, "afflicted by Involuntary Transformation") then
+		if phase == "phase2" and currentClassA ~= "DRUID" and currentClassB ~= "DRUID" then
+			self:SyncClassCall("DRUID")
+		end
+
+	elseif string.find(msg, "is afflicted by Berserk") or string.find(msg, "You are afflicted by Berserk") then
+		if phase == "phase2" and currentClassA ~= "WARRIOR" and currentClassB ~= "WARRIOR" then
+			self:SyncClassCall("WARRIOR")
+		end
 
 
 	elseif string.find(msg, L["trigger_tailLash"]) and self.db.profile.taillash then
@@ -651,9 +729,9 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.curseFade and rest and self.db.profile.curse then
 		self:CurseFade(rest)
 
-	elseif sync == syncName.classCallA and rest then
-		classA = rest
-	elseif sync == syncName.classCallB and rest and self.db.profile.classcall then
+	elseif self.db.profile.classcall and classCallSyncs[sync] then
+		self:ClassCall(classCallSyncs[sync])
+	elseif self.db.profile.classcall and (sync == syncName.classCall or sync == syncName.classCallA or sync == syncName.classCallB) and rest then
 		self:ClassCall(rest)
 
 	elseif sync == syncName.wildPolymorph and rest and self.db.profile.wildpolymorph then
@@ -837,24 +915,71 @@ function module:CurseFade(rest)
 	self:RemoveWarningSign(icon.curse)
 end
 
-function module:ClassCall(classB)
-	self:RemoveBar(L["bar_classCallFirst"])
-	self:CancelDelayedBar(L["bar_classCallSoon"])
-	self:RemoveBar(L["bar_classCallSoon"])
+function module:ClassCall(class)
+	if not class then return end
+	class = string.upper(class)
+	if not L[class] then return end
 
-	self:Bar(string.format(L["bar_classCallPair"],L[classA],L[classB]), timer.classCallDur, icon.classCall, true, color.classCallDur)
-	self:Message(L["msg_classCall_"..classA], "Positive", false, nil, false)
-	self:Message(L["msg_classCall_"..classB], "Positive", false, nil, false)
-	
+	local now = GetTime()
 
-	if playerClass == classA or playerClass == classB then
-		self:Sound("Beware")
-		self:WarningSign(icon[playerClass], 2, true, L["warn_classCall"])
+	if currentClassA and (now - classCallTime < 4) then
+		-- Within 4 seconds of first class call: handle dual class call
+		if class == currentClassA or class == currentClassB then
+			return
+		end
+
+		currentClassB = class
+
+		if L["msg_classCall_" .. currentClassB] then
+			self:Message(L["msg_classCall_" .. currentClassB], "Positive", false, nil, false)
+		end
+
+		if playerClass == currentClassB then
+			self:Sound("Beware")
+			self:WarningSign(icon[playerClass] or icon.classCall, 2, true, L["warn_classCall"])
+		end
+
+		self:RemoveBar(string.format(L["bar_classCallSingle"], L[currentClassA]))
+		self:RemoveBar(string.format(L["bar_classCallPair"], L[currentClassA], L[currentClassB]))
+
+		local elapsed = now - classCallTime
+		local remaining = timer.classCallDur - elapsed
+		if remaining < 1 then remaining = 1 end
+
+		self:Bar(string.format(L["bar_classCallPair"], L[currentClassA], L[currentClassB]), remaining, icon.classCall, true, color.classCallDur)
+	else
+		-- If previous call was still active, clean up its bars
+		if currentClassA then
+			self:RemoveBar(string.format(L["bar_classCallSingle"], L[currentClassA]))
+			if currentClassB then
+				self:RemoveBar(string.format(L["bar_classCallPair"], L[currentClassA], L[currentClassB]))
+			end
+		end
+
+		currentClassA = class
+		currentClassB = nil
+		classCallTime = now
+
+		self:RemoveBar(L["bar_classCallFirst"])
+		self:CancelDelayedBar(L["bar_classCallSoon"])
+		self:RemoveBar(L["bar_classCallSoon"])
+		self:CancelDelayedMessage(L["msg_classCall_soon3"])
+
+		if L["msg_classCall_" .. currentClassA] then
+			self:Message(L["msg_classCall_" .. currentClassA], "Positive", false, nil, false)
+		end
+
+		if playerClass == currentClassA then
+			self:Sound("Beware")
+			self:WarningSign(icon[playerClass] or icon.classCall, 2, true, L["warn_classCall"])
+		end
+
+		self:Bar(string.format(L["bar_classCallSingle"], L[currentClassA]), timer.classCallDur, icon.classCall, true, color.classCallDur)
+
+		-- Class call is every 25-35sec, dur is 30sec
+		self:DelayedBar(timer.classCallDur, L["bar_classCallSoon"], timer.classCallCd[2] - timer.classCallDur, icon.classCall, true, color.classCallCd)
+		self:DelayedMessage(timer.classCallDur - 8, L["msg_classCall_soon3"], "Personal", false, nil, false)
 	end
-	
-	--class call is every 25-35sec, dur is 30sec, 2 class calls can overlap by 5sec, can also have 5sec without class call
-	self:DelayedBar(timer.classCallDur, L["bar_classCallSoon"], timer.classCallCd[2] - timer.classCallDur, icon.classCall, true, color.classCallCd)
-	self:DelayedMessage(timer.classCallDur - 8, L["msg_classCall_soon3"], "Personal", false, nil, false)
 end
 
 function module:WildPolymorph(rest)
@@ -984,6 +1109,11 @@ function module:Test()
 		{ time = 29, func = function()
 			print("Test: Class Call - " .. classTrigger)
 			self:CHAT_MSG_MONSTER_YELL(classTrigger)
+		end },
+		{ time = 31, func = function()
+			local dualTrigger = (playerClass == "PRIEST" and L["trigger_classCall_Druid"]) or L["trigger_classCall_Priest"]
+			print("Test: Dual Class Call (2nd class) - " .. dualTrigger)
+			self:CHAT_MSG_MONSTER_YELL(dualTrigger)
 		end },
 
 		-- Phase 3 Bone Constructs
