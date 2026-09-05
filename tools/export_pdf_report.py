@@ -545,6 +545,16 @@ def render_pdf(html_file):
         dst.write(src.read())
     print(f"  [OK] Copied PDF to root: {PDF_ROOT_PATH}")
 
+    # Copy to user's Downloads folder
+    import shutil
+    downloads_dir = os.path.expanduser(r"~\Downloads")
+    if os.path.exists(downloads_dir):
+        dl_pdf = os.path.join(downloads_dir, "BigWigs_30141_Report.pdf")
+        dl_html = os.path.join(downloads_dir, "BigWigs_30141_Report.html")
+        shutil.copy2(PDF_DOC_PATH, dl_pdf)
+        shutil.copy2(HTML_OUTPUT_PATH, dl_html)
+        print(f"  [OK] Saved copy to Downloads: {dl_pdf}")
+
 def main():
     print("=" * 70)
     print("  BIGWIGS 30141: EXPORTING TECHNICAL & VALIDATION REPORT TO PDF")
