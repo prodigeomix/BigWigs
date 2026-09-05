@@ -55,7 +55,7 @@ L:RegisterTranslations("enUS", function() return {
 	trigger_ignite = "afflicted by Ignite Mana", --CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE // CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE // CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE
 	trigger_ignite2 = "Ignite Mana was resisted", --CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE // CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE
 	bar_igniteCd = "Ignite Mana CD",
-	msg_ignite = "Ignite Man - Dispel! (Classes with Mana only)",
+	msg_ignite = "Ignite Mana - Dispel! (Classes with Mana only)",
 } end)
 
 local timer = {
