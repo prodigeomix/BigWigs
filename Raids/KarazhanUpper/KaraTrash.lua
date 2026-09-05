@@ -51,10 +51,6 @@ L:RegisterTranslations("enUS", function()
 		overflowing_arcana_name = "Overflowing Arcana Alert",
 		overflowing_arcana_desc = "Warn when Overflowing Arcana stacks are near the limit.",
 
-		overflowing_arcana_cmd = "overflowing_arcana",
-		overflowing_arcana_name = "Overflowing Arcana Alert",
-		overflowing_arcana_desc = "Warn when Overflowing Arcana stacks are near the limit.",
-
 		frigid_mana_breath_cmd = "frigid_mana_breath",
 		frigid_mana_breath_name = "Manascale Drake Breath",
 		frigid_mana_breath_desc = "Warn when Manascale Drake is able to cast Frigid Mana Breath.",

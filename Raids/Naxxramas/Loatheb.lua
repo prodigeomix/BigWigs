@@ -117,7 +117,7 @@ L:RegisterTranslations("esES", function() return {
 	doombar = "Condena inevitable %d",
 	doomwarn = "¡Condena inevitable %d! %d segundos hasta la próxima!",
 	doomwarn5sec = "¡Condena inevitable %d en 5 segundos!",
-	doomtrigger = "sufre de Condena inevitable.",
+	doomtrigger = "afligido por Fatalidad inevitable.",
 
 	cursewarn = "¡Maldiciones quitadas! RENOVA MALDICIÓNES!",
 	cursebar = "Deshacer maldición",
@@ -146,8 +146,6 @@ L:RegisterTranslations("esES", function() return {
 	--sound_cmd = "sound",
 	sound_name = "Efectos de Sonido",
 	sound_desc = "Reproduce efectos de sonido cuando esté marcado",
-
-	doomtrigger = "afligido por Fatalidad inevitable.",
 
 	--consumable_cmd = "consumable",
 	consumable_name = "No avisar la banda de usar consumibles (A)",
@@ -272,7 +270,7 @@ local icon = {
 	softEnrage = "Spell_Shadow_UnholyFrenzy",
 	doom = "Spell_Shadow_NightOfTheDead",
 	spore = "Ability_TheBlackArrow",
-	sieni = "Interface\\AddOns\\\BigWigs\\Textures\\sieni",
+	sieni = "Interface\\AddOns\\BigWigs\\Textures\\sieni",
 	curse = "Spell_Holy_RemoveCurse",
 	corruptedMind = "spell_shadow_auraofdarkness",
 }

@@ -4495,7 +4495,7 @@ BabbleSpell:RegisterTranslations("deDE", function()
 		["Challenging Roar"] = "Herausforderndes Gebr\195\188ll",
 		["Challenging Shout"] = "Herausforderungsruf",
 		["Charge Rage Bonus Effect"] = "Wut-Aufladung-Bonus-Effekt",
-		["Charge Stun"] = "Sturmangriff \(Bet\195\164ubung\)",
+		["Charge Stun"] = "Sturmangriff (Bet\195\164ubung)",
 		["Charge"] = "Sturmangriff",
 		["Cheap Shot"] = "Fieser Trick",
 		["Chilled"] = "K\195\164lte",

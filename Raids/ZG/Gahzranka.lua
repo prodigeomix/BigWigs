@@ -40,9 +40,9 @@ L:RegisterTranslations("enUS", function() return {
 L:RegisterTranslations("esES", function() return {
 	--cmd = "Gahzranka",
 
-	frostbreath_trigger = "Gahz\'ranka comienza a lanzar Aliento de Escarcha\.",
+	frostbreath_trigger = "Gahz'ranka comienza a lanzar Aliento de Escarcha.",
 	frostbreath_bar = "Aliento de Escarcha",
-	massivegeyser_trigger = "Gahz\'ranka comienza a lanzar Géiser monumental\.",
+	massivegeyser_trigger = "Gahz'ranka comienza a lanzar Géiser monumental.",
 	massivegeyser_bar = "Géiser monumental",
 
 	--frostbreath_cmd = "frostbreath",
@@ -57,9 +57,9 @@ L:RegisterTranslations("esES", function() return {
 L:RegisterTranslations("deDE", function() return {
 	--cmd = "Gahzranka",
 
-	frostbreath_trigger = "Gahz\'ranka beginnt Frostatem auszuf\195\188hren\.",
+	frostbreath_trigger = "Gahz'ranka beginnt Frostatem auszuf\195\188hren.",
 	frostbreath_bar = "Frostatem",
-	massivegeyser_trigger = "Gahz\'ranka beginnt Massiver Geysir zu wirken\.",
+	massivegeyser_trigger = "Gahz'ranka beginnt Massiver Geysir zu wirken.",
 	massivegeyser_bar = "Massiver Geysir",
 
 	--frostbreath_cmd = "frostbreath",

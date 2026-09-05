@@ -349,7 +349,6 @@ local icon = {
 	--unused atm
 	frostBreath = "spell_frost_frostnova",
 	harshWinds = "spell_nature_earthbind",
-	chainLightning = "spell_nature_chainlightning",
 }
 local color = {
 	activeX = "White",
