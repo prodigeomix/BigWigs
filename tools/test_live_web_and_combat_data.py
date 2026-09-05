@@ -120,12 +120,14 @@ def verify_web_integrity(web_contents):
     assert "function BigWigs.modulePrototype:SetRaidTargetForPlayer(" in core, "Core.lua missing modulePrototype:SetRaidTargetForPlayer"
     print("  [OK] Core.lua on GitHub: All engine API extensions verified.")
 
-    # 4. Priest Healer Bar Layout Preservation
+    # 4. Canonical DefaultDB & Priest Healer Profile Optimization Verification
     bars = web_contents["Plugins/Bars.lua"]
-    assert "posx = 960" in bars and "posy = 700" in bars, "Priest healer bar position modified!"
-    assert "scale = 0.85" in bars and "width = 185" in bars and "height = 14" in bars, "Priest healer layout modified!"
+    assert "scale = 1.0" in bars and "emphasizeMove = true" in bars and "emphasizeFlash = true" in bars, "Bars.lua canonical defaults modified!"
     assert "function BigWigsBars:BigWigs_StartCounterBar(" in bars, "Bars.lua missing BigWigs_StartCounterBar handler"
-    print("  [OK] Plugins/Bars.lua on GitHub: Priest Healer layout & StartCounterBar verified.")
+    assert "function BigWigsBars:BigWigs_HideCounterBars(" in bars, "Bars.lua missing BigWigs_HideCounterBars handler"
+    assert "function BigWigs:OptimizeHealerProfile(" in core, "Core.lua missing OptimizeHealerProfile"
+    assert '["priest"]' in core, "Core.lua missing /bw priest command"
+    print("  [OK] Plugins/Bars.lua on GitHub: Canonical defaults restored & /bw priest optimizer verified.")
 
     # 5. Bug Fix Verifications
     chrom = web_contents["Raids/BWL/Chromaggus.lua"]

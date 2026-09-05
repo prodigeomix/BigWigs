@@ -231,9 +231,7 @@ BigWigsMessages = BigWigs:NewModule(L["Messages"])
 BigWigsMessages.defaultDB = {
 	display = L["BigWigs frame"],
 	usecolors = true,
-	scale = 0.85,
-	posx = 650,
-	posy = 720,
+	scale = 1.0,
 }
 BigWigsMessages.consoleCmd = L["msg"]
 BigWigsMessages.consoleOptions = {

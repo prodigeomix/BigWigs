@@ -96,11 +96,11 @@ end)
 
 BigWigsWarningSign = BigWigs:NewModule(name)
 BigWigsWarningSign.defaultDB = {
-	posx = 640,
-	posy = 560,
+	posx = 800,
+	posy = 645,
 	disabled = false,
-	scale = 0.65,
-	alpha = 0.75,
+	scale = 0.8,
+	alpha = 0.8,
 }
 BigWigsWarningSign.consoleCmd = L["WarningSign"]
 BigWigsWarningSign.consoleOptions = {
