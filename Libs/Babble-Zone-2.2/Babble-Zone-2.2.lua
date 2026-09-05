@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 Name: Babble-Zone-2.2
 Revision: $Rev: 17779 $
 Author(s): ckknight (ckknight@gmail.com)
@@ -44,6 +44,8 @@ BabbleZone:RegisterTranslations("enUS", function()
 		["Lapidis Isle"] = true,
 		["Lower Karazhan Halls"] = true,
 		["Tower of Karazhan"] = true, -- new twow name
+		["Timbermaw Hold"] = true, --1.18.1
+		["Timbermaw Tunnels"] = true, --1.18.1
 		["Moomoo Grove"] = true,
 		["Scarlet Enclave"] = true,
 		["Stormwind Vault"] = true,

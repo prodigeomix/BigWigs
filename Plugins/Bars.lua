@@ -81,6 +81,9 @@ L:RegisterTranslations("enUS", function()
 		["Emphasize Bars"] = true,
 		["Enable IntervalBars"] = true,
 		["Keep timers visible untill the timed event happens"] = true,
+		["HP"] = true,
+		["Mana"] = true,
+		["dead"] = true,
 	}
 end)
 
@@ -120,6 +123,9 @@ L:RegisterTranslations("deDE", function()
 		["Move bars that are emphasized to a second anchor."] = "Hervorgehobene Anzeigebalken zu einem zweiten Ankerpunkt bewegen.",
 		["Set the scale for emphasized bars."] = "Die Skalierung für hervorgehobene Anzeigebalken festlegen.",
 		["Emphasize Bars"] = "Hervorgehobene Balken",
+		["HP"] = "HP",
+		["Mana"] = "Mana",
+		["dead"] = "tot",
 	}
 end)
 
@@ -161,6 +167,9 @@ L:RegisterTranslations("esES", function()
 		["Emphasize Bars"] = "Barras de Alerta",
 		["Enable IntervalBars"] = "Activar las Barras de Intervalo",
 		["Keep timers visible untill the timed event happens"] = "Se queda visibles los temporizadores hasta que un evento medido occura",
+		["HP"] = "HP",
+		["Mana"] = "Mana",
+		["dead"] = "muerto",
 	}
 end)
 ----------------------------------
@@ -431,6 +440,9 @@ function BigWigsBars:OnEnable()
 	self:RegisterEvent("BigWigs_HideAnchors")
 	self:RegisterEvent("BigWigs_StartBar")
 	self:RegisterEvent("BigWigs_StopBar")
+	self:RegisterEvent("BigWigs_UpdateBar")
+	self:RegisterEvent("BigWigs_SetBar")
+	self:RegisterEvent("BigWigs_ColorBar")
 	self:RegisterEvent("BigWigs_StartCounterBar")
 	self:RegisterEvent("BigWigs_StopCounterBar")
 	self:RegisterEvent("BigWigs_SetCounterBar")
@@ -438,6 +450,7 @@ function BigWigsBars:OnEnable()
 	self:RegisterEvent("BigWigs_StopHPBar")
 	self:RegisterEvent("BigWigs_SetHPBar")
 	self:RegisterEvent("BigWigs_StartIntervalBar")
+	self:RegisterEvent("BigWigs_StartMonitorBar")
 	if not self:IsEventRegistered("Surface_Registered") then
 		self:RegisterEvent("Surface_Registered", function()
 			self.consoleOptions.args[L["Texture"]].validate = surface:List()
@@ -537,11 +550,12 @@ function BigWigsBars:BigWigs_HideAnchors()
 	end
 end
 
-function BigWigsBars:BigWigs_StartBar(module, text, time, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+function BigWigsBars:BigWigs_StartBar(module, text, time, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
 	if not text or not time then
 		return
 	end
 	local id = "BigWigsBar " .. text
+	if emphasize == nil then emphasize = true end
 	if not self.frames.anchor then
 		self:SetupFrames()
 	end
@@ -562,7 +576,7 @@ function BigWigsBars:BigWigs_StartBar(module, text, time, icon, otherc, c1, c2, 
 
 	local groupId = self.frames.anchor.candyBarGroupId
 	local scale = self.db.profile.scale or 1
-	if self.frames.emphasizeAnchor and self.db.profile.emphasize and (self.db.profile.emphasizeMove or self.db.profile.emphasizeFlash) then
+	if self.frames.emphasizeAnchor and self.db.profile.emphasize and emphasize == true and (self.db.profile.emphasizeMove or self.db.profile.emphasizeFlash) then
 		-- If the bar is started at more than 15 seconds, it won't be emphasized
 		-- right away, but if it's started at 15 or less, it will be.
 		if time > 20 then
@@ -664,11 +678,34 @@ function BigWigsBars:BigWigs_StartBar(module, text, time, icon, otherc, c1, c2, 
 				return
 			end
 
-			if IsShiftKeyDown() then
+			if IsControlKeyDown() then
 				SendChatMessage(text .. " in " .. SecondsToTime(math.floor(t - elapsed)), "RAID_WARNING");
-			else
+			elseif IsShiftKeyDown() then
 				SendChatMessage(text .. " in " .. SecondsToTime(math.floor(t - elapsed)), "RAID");
 				SendChatMessage(text .. " in " .. SecondsToTime(math.floor(t - elapsed)), "BATTLEGROUND");
+			else
+				if target and spell and SUPERWOW_VERSION then
+					-- SuperWoW can cast without retargeting if we can get a GUID
+					local superTarget = target
+					if string.sub(target,1,2) ~= "0x" then
+						superTarget = BigWigs:GetGUIDByName(target, 0) or BigWigs:GetGUIDByName(target, 1)
+					end
+					if superTarget then
+						CastSpellByName(spell, superTarget)
+						return
+					end
+				end
+				-- normal target & cast, also SuperWoW fall-back if no GUID found
+				if target then
+					if string.sub(target,1,2) == "0x" then -- GUID
+						TargetUnit(target)
+					else -- name
+						TargetByName(target,true)
+					end
+				end
+				if spell then
+					CastSpellByName(spell)
+				end
 			end
 		end
 	end
@@ -714,25 +751,120 @@ function BigWigsBars:BigWigs_StopBar(module, text)
 	module:UnregisterCandyBar("BigWigsBar " .. text)
 end
 
+function BigWigsBars:BigWigs_UpdateBar(module, barName, value, text, paused)
+	if not barName then
+		return
+	end
+	local id = "BigWigsBar " .. barName
+	local bar = candybar.var.handlers[id]
+	if not bar then
+		return
+	end
+
+	-- adjust value
+	if type(value) == "number" and value < 0 and bar.time + value >= 0 then
+		bar.elapsed = math.abs(value)
+		candybar:Update(id)
+	elseif type(value) == "number" and value >= 0 and bar.time >= value then
+		bar.elapsed = bar.time - value
+		candybar:Update(id)
+	end
+
+	-- adjust display text
+	if text then
+		candybar:SetText(id, text)
+	end
+
+	-- adjust paused state (bar.paused is either nil or true)
+	if paused == true and not bar.paused then
+		module:PauseCandyBar(id)
+	elseif paused == false and bar.paused == true then
+		module:StartCandyBar(id)
+	end
+
+	-- adjust color
+	if color then
+		module:SetCandyBarColor(id, color)
+	end
+
+	-- adjust timer format
+	if timeFormat then
+		module:SetCandyBarTimeFormat(id, function(t)
+			return string.format(timeFormat, t)
+		end)
+	end
+end
+
+function BigWigsBars:BigWigs_SetBar(module, barName, timeLeft, timeTotal, timeFormat)
+	if not barName then
+		return
+	end
+	local id = "BigWigsBar " .. barName
+	local bar = candybar.var.handlers[id]
+	if not bar then
+		return
+	end
+
+	-- adjust total duration of bar
+	if timeTotal then
+		module:SetCandyBarTime(id, timeTotal)
+	end
+
+	-- adjust time left
+	if timeLeft then
+		module:SetCandyBarTimeLeft(id, timeLeft)
+	end
+
+	-- adjust timer format
+	if timeFormat then
+		module:SetCandyBarTimeFormat(id, function(t)
+			return string.format(timeFormat, t)
+		end)
+	end
+	
+	-- update in case the bar is paused so changes become visible
+	candybar:Update(id)
+end
+
+function BigWigsBars:BigWigs_ColorBar(module, barName, color, bgcolor)
+	if not barName then
+		return
+	end
+	local id = "BigWigsBar " .. barName
+	local bar = candybar.var.handlers[id]
+	if not bar then
+		return
+	end
+
+	-- adjust color
+	if color then
+		module:SetCandyBarColor(id, color)
+	end
+
+	-- adjust background color
+	if bgcolor then
+		module:SetCandyBarBackgroundColor(id, bgcolor)
+	end
+end
+
 function BigWigsBars:GetBarStatus(module, text)
 	local id = "BigWigsBar " .. text
 	local registered, time, elapsed, running = self:CandyBarStatus(id)
 	return registered, time, elapsed, running
 end
 
-local counterBarCache = {-- [i] = {text, module}
-}
-function BigWigsBars:BigWigs_StartCounterBar(module, text, max, icon, bar, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+function BigWigsBars:BigWigs_StartCounterBar(module, text, max, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell, timeFormat)
 	if not text then
 		return
 	end
+	timeFormat = timeFormat or "%d"
 	local id = "BigWigsBar " .. text
-	BigWigsBars:BigWigs_StartBar(module, text, max, icon, bar, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	BigWigsBars:BigWigs_StartBar(module, text, max, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
 	module:PauseCandyBar(id)
 	module:SetCandyBarTimeFormat(id, function(t)
-		return string.format("%d", t)
+		return string.format(timeFormat, t)
 	end)
-	tinsert(counterBarCache, { text, module })
+	candybar:Update(id)
 end
 
 function BigWigsBars:BigWigs_StopCounterBar(module, text)
@@ -758,21 +890,12 @@ function BigWigsBars:BigWigs_SetCounterBar(module, text, value)
 	end
 end
 
-function BigWigsBars:BigWigs_HideCounterBars()
-	-- forces to hide all counter bars cached, used on bosskills
-	for i = 1, table.getn(counterBarCache) do
-		BigWigsBars:BigWigs_StopCounterBar(counterBarCache[i][2], counterBarCache[i][1])
-	end
-
-	counterBarCache = {}
-end
-
-function BigWigsBars:BigWigs_StartHPBar(module, text, max, bar, icon, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+function BigWigsBars:BigWigs_StartHPBar(module, text, max, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
 	if not text then
 		return
 	end
 	local id = "BigWigsBar " .. text
-	BigWigsBars:BigWigs_StartBar(module, text, max, bar, icon, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	BigWigsBars:BigWigs_StartBar(module, text, max, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, false)
 	module:PauseCandyBar(id)
 	module:SetCandyBarTimeFormat(id, function(t)
 		local timetext
@@ -815,6 +938,105 @@ function BigWigsBars:BigWigs_StartIntervalBar(module, text, intervalMin, interva
 	if self.db.profile.intervalbar then
 		self:SetCandyBarFade("BigWigsBar " .. text, intervalMax - intervalMin)
 	end
+end
+
+local monitorBarCache = {-- [i] = {id, GUID, type, barText, insertMark}
+}
+function BigWigsBars:BigWigs_StartMonitorBar(module, barName, icon, guid, type, displayText, insertMark, emphazise, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	if (not barName) or (not guid) then
+		return
+	end
+	
+	-- set up defaults
+	type = type or "health"
+	displayText = displayText or barName
+	if emphazise == nil then
+		emphazise = false
+	end
+	if not otherc then
+		otherc = true
+		c1 = (type == "health" and "Green") or (type == "mana" and "Blue")
+	end
+	
+	-- create bar, pause it, format timer
+	BigWigsBars:BigWigs_StartBar(module, barName, 100, icon, otherc, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphazise, guid)
+	local id = "BigWigsBar " .. barName
+	module:PauseCandyBar(id)
+	module:SetCandyBarTimeFormat(id, function(t)
+		return string.format("%d%%", floor(t))
+	end)
+
+	-- set the bar's background color to a darker hue
+	local _, r, g, b = paint:GetRGBPercent(c1)
+	module:SetCandyBarBackgroundColorRGB(id, r*0.7, g*0.7, b*0.7, 0.5)
+
+	-- enter/update bar's cache entry
+	local barExists = false
+	for i = 1, table.getn(monitorBarCache) do
+		if monitorBarCache[i] and monitorBarCache[i][1] == id then
+			barExists = true
+			monitorBarCache[i][2] = guid
+			monitorBarCache[i][3] = type
+			monitorBarCache[i][4] = displayText
+			monitorBarCache[i][5] = insertMark
+			-- vary endtime to guarantee stable sorting of bars created at the same time
+			candybar.var.handlers[id].endtime = candybar.var.handlers[id].endtime - 1 + i/10
+		end
+	end
+	if not barExists then
+		table.insert(monitorBarCache, { id, guid, type, displayText, insertMark })
+		candybar.var.handlers[id].endtime = candybar.var.handlers[id].endtime - 1 + table.getn(monitorBarCache)/10
+	end
+
+	BigWigsBars:UpdateAllMonitorBars()
+end
+
+function BigWigsBars:UpdateAllMonitorBars()
+	if table.getn(monitorBarCache) == 0 then
+		return
+	end
+
+	for i = 1,table.getn(monitorBarCache) do
+		local bar = candybar.var.handlers[monitorBarCache[i][1]]
+		if not bar then
+			table.remove(monitorBarCache, i)
+			self:UpdateAllMonitorBars()
+			return
+		end
+
+		-- check unit for health or mana
+		local currentValue = 0
+		local currentValueString = ""
+		local currentPercent = 0
+		if monitorBarCache[i][3] == "health" and UnitExists(monitorBarCache[i][2]) then
+			currentValue = UnitHealth(monitorBarCache[i][2])
+			currentValueString = BigWigs:FormatLargeNumber(currentValue).." "..L["HP"]
+			currentPercent = math.floor(currentValue/UnitHealthMax(monitorBarCache[i][2]) * 100)
+		elseif monitorBarCache[i][3] == "mana" and UnitExists(monitorBarCache[i][2]) then
+			currentValue = UnitMana(monitorBarCache[i][2])
+			currentValueString = BigWigs:FormatLargeNumber(currentValue).." "..L["Mana"]
+			currentPercent = math.floor(currentValue/UnitManaMax(monitorBarCache[i][2]) * 100)
+		end
+		-- update bar
+		bar.elapsed = 100 - currentPercent
+		candybar:Update(monitorBarCache[i][1])
+
+		-- piece together new bar text
+		local assembledText = monitorBarCache[i][4]
+		if monitorBarCache[i][5] == true and UnitExists(monitorBarCache[i][2]) then
+			assembledText = assembledText.." "..BigWigs:RaidTargetLookup(GetRaidTargetIndex(monitorBarCache[i][2]), true)
+		end
+		if UnitExists(monitorBarCache[i][2]) and not UnitIsDead(monitorBarCache[i][2]) then
+			assembledText = assembledText.." - "..currentValueString
+		else
+			assembledText = assembledText.." - "..L["dead"]
+		end
+		-- update bar
+		candybar:SetText(monitorBarCache[i][1], assembledText)
+	end
+
+	-- check again in quarter of a second; non-repeatable so it auto-cancels if bar cache is empty
+	self:ScheduleEvent("UpdateMonitorBars", self.UpdateAllMonitorBars, 0.25, self)
 end
 
 -----------------------------------------------------------------------

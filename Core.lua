@@ -1079,6 +1079,111 @@ if SUPERWOW_STRING or SetAutoloot then
 		if not self.castEventUnits[unitName] then
 			self.castEventUnits[unitName] = callback
 		end
+	function BigWigs.modulePrototype:SetRaidTargetForPlayer(player, mark)
+		if not IsRaidLeader() and not BigWigs.markUnitsWhenNotRaidLeader then
+			return false
+		end
+
+		local playerUnit = nil
+		for i = 1, GetNumRaidMembers() do
+			if UnitName("raid" .. i) == player then
+				playerUnit = "raid" .. i
+				break
+			end
+		end
+
+		if not playerUnit then
+			return false
+		end
+
+		-- Store previous mark before changing it
+		local previousMark = GetRaidTargetIndex(playerUnit) or 0
+		if not self.storedPlayerMarks then
+			self.storedPlayerMarks = {}
+		end
+		self.storedPlayerMarks[player] = previousMark
+
+		-- look up mark index if name string was input
+		if type(mark) == "string" then
+			mark = BigWigs:RaidTargetLookup(mark)
+		end
+
+		SetRaidTarget(playerUnit, mark)
+		return true
+	end
+
+	function BigWigs.modulePrototype:GetAvailableRaidMark(excludeMarks, reverse)
+		excludeMarks = excludeMarks or {}
+		local usedMarks = {}
+		local currentTime = GetTime()
+
+		if not self.recentlyUsedMarks then
+			self.recentlyUsedMarks = {}
+		end
+
+		for i = 1, GetNumRaidMembers() do
+			local mark = GetRaidTargetIndex("raid" .. i)
+			if mark then
+				usedMarks[mark] = true
+			end
+		end
+
+		for _, mark in ipairs(excludeMarks) do
+			local markIndex = type(mark) == "string" and BigWigs:RaidTargetLookup(mark) or mark
+			if markIndex then
+				usedMarks[markIndex] = true
+			end
+		end
+
+		local candidates = {}
+		local startMark = reverse and 1 or 8
+		local endMark = reverse and 8 or 1
+		local step = reverse and 1 or -1
+
+		for mark = startMark, endMark, step do
+			if not usedMarks[mark] then
+				table.insert(candidates, {
+					mark = mark,
+					lastUsed = self.recentlyUsedMarks[mark] or 0
+				})
+			end
+		end
+
+		table.sort(candidates, function(a, b)
+			return a.lastUsed < b.lastUsed
+		end)
+
+		if table.getn(candidates) > 0 then
+			local selectedMark = candidates[1].mark
+			self.recentlyUsedMarks[selectedMark] = currentTime
+			return selectedMark
+		end
+
+		return nil
+	end
+
+	function BigWigs.modulePrototype:RestoreInitialRaidTargetForPlayer(player)
+		if not self.storedPlayerMarks or not self.storedPlayerMarks[player] then
+			return false
+		end
+
+		local playerUnit = nil
+		for i = 1, GetNumRaidMembers() do
+			if UnitName("raid" .. i) == player then
+				playerUnit = "raid" .. i
+				break
+			end
+		end
+
+		if not playerUnit then
+			return false
+		end
+
+		local initialMark = self.storedPlayerMarks[player]
+		self.storedPlayerMarks[player] = nil
+
+		SetRaidTarget(playerUnit, initialMark)
+		return true
 	end
 end
 
@@ -1111,8 +1216,8 @@ function BigWigs.modulePrototype:CancelDelayedMessage(text)
 	self:CancelScheduledEvent(delayPrefix .. "Message" .. self:ToString() .. text)
 end
 
-function BigWigs.modulePrototype:Bar(text, time, icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
-	self:TriggerEvent("BigWigs_StartBar", self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+function BigWigs.modulePrototype:Bar(text, time, icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
+	self:TriggerEvent("BigWigs_StartBar", self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
 end
 function BigWigs.modulePrototype:RemoveBar(text)
 	self:TriggerEvent("BigWigs_StopBar", self, text)
@@ -1125,11 +1230,47 @@ function BigWigs.modulePrototype:DelayedIntervalBar(delay, text, intervalMin, in
 	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. text, "BigWigs_StartIntervalBar", delay, self, text, intervalMin, intervalMax, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
 end
 
-function BigWigs.modulePrototype:DelayedBar(delay, text, time, icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
-	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. text, "BigWigs_StartBar", delay, self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+function BigWigs.modulePrototype:DelayedBar(delay, text, time, icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
+	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. text, "BigWigs_StartBar", delay, self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
 end
 function BigWigs.modulePrototype:CancelDelayedBar(text)
 	self:CancelScheduledEvent(delayPrefix .. "Bar" .. self:ToString() .. text)
+end
+
+function BigWigs.modulePrototype:ClickBar(text, time, icon, target, spell, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize)
+	if not otherColor then otherColor = "ClickToTarget" end
+	if emphasize == nil then emphasize = false end
+	self:TriggerEvent("BigWigs_StartBar", self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
+end
+function BigWigs.modulePrototype:DelayedClickBar(delay, text, time, icon, target, spell, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize)
+	if not otherColor then otherColor = "ClickToTarget" end
+	if emphasize == nil then emphasize = false end
+	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. text, "BigWigs_StartBar", delay, self, text, time, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell)
+end
+
+function BigWigs.modulePrototype:MonitorBar(barName, icon, guid, type, displayText, insertMark, emphazise, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	self:TriggerEvent("BigWigs_StartMonitorBar", self, barName, "Interface\\Icons\\" .. icon, guid, type, displayText, insertMark, emphazise, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+end
+function BigWigs.modulePrototype:DelayedMonitorBar(delay, barName, icon, guid, type, displayText, insertMark, emphazise, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. barName, "BigWigs_StartMonitorBar", delay, self, barName, "Interface\\Icons\\" .. icon, guid, type, displayText, insertMark, emphazise, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+end
+
+function BigWigs.modulePrototype:CounterBar(barName, max, icon, target, spell, emphasize, timeFormat, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	if emphasize == nil then emphasize = false end
+	self:TriggerEvent("BigWigs_StartCounterBar", self, barName, max, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell, timeFormat)
+end
+function BigWigs.modulePrototype:DelayedCounterBar(delay, barName, max, icon, target, spell, emphasize, timeFormat, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10)
+	return self:ScheduleEvent(delayPrefix .. "Bar" .. self:ToString() .. barName, "BigWigs_StartCounterBar", delay, self, barName, max, "Interface\\Icons\\" .. icon, otherColor, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, emphasize, target, spell, timeFormat)
+end
+
+function BigWigs.modulePrototype:UpdateBar(barName, value, displayText, paused)
+	self:TriggerEvent("BigWigs_UpdateBar", self, barName, value, displayText, paused)
+end
+function BigWigs.modulePrototype:SetBar(barName, timeLeft, timeTotal, timeFormat)
+	self:TriggerEvent("BigWigs_SetBar", self, barName, timeLeft, timeTotal, timeFormat)
+end
+function BigWigs.modulePrototype:ColorBar(barName, color, bgcolor)
+	self:TriggerEvent("BigWigs_ColorBar", self, barName, color, bgcolor)
 end
 function BigWigs.modulePrototype:BarStatus(text)
 	local registered, time, elapsed, running = BigWigsBars:GetBarStatus(self, text)
@@ -1790,4 +1931,209 @@ function BigWigs:CancelAuraTexture(texture)
 	end
 
 	return false
+end
+
+-- Virtual Tooltip to scan for strings
+BigWigs.VTT = CreateFrame("GameTooltip", "BigWigsVTT", nil, "GameTooltipTemplate")
+BigWigs.VTT:SetOwner(BigWigsVTT, "ANCHOR_NONE")
+
+function BigWigs:BuffNameByIndex(buffIndex)
+	BigWigsVTT:SetPlayerBuff(buffIndex)
+	
+	local line = getglobal("BigWigsVTTTextLeft1")
+	if line and line:IsVisible() then
+		return line:GetText()
+	else
+		BigWigs.VTT:SetOwner(BigWigsVTT, "ANCHOR_NONE")
+	end
+end
+
+function BigWigs:GetUnitIdByName(name, depth)
+	depth = depth or 0 -- default to raid members
+	local suffix = ""
+	for i = 1, depth do
+		suffix = suffix .. "target"
+	end
+
+	for i = 1, GetNumRaidMembers() do
+		local id = "raid" .. i .. suffix
+		if UnitName(id) == name then
+			return id
+		end
+	end
+end
+
+function BigWigs:GetTargetByName(name, depth)
+	depth = depth or 1 -- default to targets of raid members
+	local unitId = BigWigs:GetUnitIdByName(name, depth)
+	if unitId then 
+		return UnitName(unitId .. "target")
+	end
+end
+
+function BigWigs:GetGUIDByName(name, depth, ignoredGUIDs)
+	depth = depth or 1 -- default to targets of raid members
+	local suffix = ""
+	for i = 1, depth do
+		suffix = suffix .. "target"
+	end
+
+	for i = 1, GetNumRaidMembers() do
+		local id = "raid" .. i .. suffix
+		if UnitName(id) == name then
+			local _, targetGUID = UnitExists(id)
+			if type(ignoredGUIDs) == "table" then
+				for _, excludedGUID in pairs(ignoredGUIDs) do
+					if targetGUID == excludedGUID then
+						targetGUID = nil
+						break
+					end
+				end
+			end
+			if targetGUID then
+				return targetGUID
+			end
+		end
+	end
+end
+
+function BigWigs:OffsetGUID(input, offset)
+	local max = 4294967295
+	local prefix, highInput, lowInput = string.sub(input, 1, -17), string.sub(input, -16, -9), string.sub(input, -8)
+
+	local lowOutput = tonumber(lowInput, 16) + offset
+	local highOutput = tonumber(highInput, 16)
+	if lowOutput < 0 then
+		lowOutput = lowOutput + max + 1
+		highOutput = highOutput - 1
+	elseif lowOutput > max then
+		lowOutput = lowOutput - max - 1
+		highOutput = highOutput + 1
+	end
+
+	return prefix .. string.format("%08X", highOutput) .. string.format("%08X", lowOutput)
+end
+
+function BigWigs:RaidTargetLookup(input, colorize)
+	local raidTargets = {
+		[0] = "none",
+		[1] = "Star",
+		[2] = "Circle",
+		[3] = "Diamond",
+		[4] = "Triangle",
+		[5] = "Moon",
+		[6] = "Square",
+		[7] = "Cross",
+		[8] = "Skull"
+	}
+
+	if type(input) == "number" then
+		local output = raidTargets[input]
+		if output then
+			if colorize then
+				return BigWigsColors:ColorizeString(L[output], output)
+			else
+				return L[output]
+			end
+		end
+	elseif type(input) == "string" then
+		input = string.lower(input)
+		for i = 0, 8 do
+			if input == string.lower(raidTargets[i]) then
+				return i
+			end
+		end
+	elseif type(input) == "nil" then
+		if colorize then
+			return BigWigsColors:ColorizeString(L["unmarked"], "unmarked")
+		else
+			return L["unmarked"]
+		end
+	end
+end
+
+function BigWigs:FormatLargeNumber(integer)
+	local integerString = tostring(integer)
+	local length = string.len(integerString)
+		
+	if length < 5 then return integerString end
+	
+	local suffix = "k"
+	if length > 7 then
+		suffix = "m"
+		length = length - 3
+	end
+
+	if length == 5 then
+		return string.sub(integerString, 1, 2) .. "." .. string.sub(integerString, 3, 4) .. suffix
+	elseif length == 6 then
+		return string.sub(integerString, 1, 3) .. "." .. string.sub(integerString, 4, 4) .. suffix
+	elseif length == 7 then
+		return string.sub(integerString, 1, 4) .. suffix
+	end
+end
+
+function BigWigs:BuffIsPresent(unitId, spellId)
+	if UnitExists(unitId) then
+		local i = 1
+		while UnitBuff(unitId, i) do
+			local _, _, foundId = UnitBuff(unitId, i)
+			if foundId == spellId then
+				return true
+			end
+			i = i + 1
+		end
+	end
+end
+
+function BigWigs:DebuffIsPresent(unitId, spellId)
+	if UnitExists(unitId) then
+		local i = 1
+		while UnitDebuff(unitId, i) do
+			local _, _, _, foundId = UnitDebuff(unitId, i)
+			if foundId == spellId then
+				return true
+			end
+			i = i + 1
+		end
+	end
+end
+
+function BigWigs:AuraIsPresent(unitId, spellId)
+	return BigWigs:DebuffIsPresent(unitId, spellId) or BigWigs:BuffIsPresent(unitId, spellId)
+end
+
+function BigWigs:GetCastTimeCoefficient(unitId)
+	local debuffs = {
+		[1] = {11719, 1.6, 1}, -- Curse of Tongues Rank 2
+		[2] = {1714, 1.5, 0}, -- Curse of Tongues Rank 1
+		[3] = {11398, 1.6, 2}, -- Mind-numbing Poison III
+		[4] = {8692, 1.5, 1}, -- Mind-numbing Poison II
+		[5] = {5760, 1.4, 0}, -- Mind-numbing Poison I
+	}
+	local coefficient = 1
+	
+	if UnitExists(unitId) then
+		for i = 1, table.getn(debuffs) do
+			if BigWigs:AuraIsPresent(unitId, debuffs[i][1]) then
+				coefficient = coefficient * debuffs[i][2]
+				i = i + debuffs[i][3]
+			end
+		end
+	end
+	
+	return coefficient
+end
+
+function BigWigs:GetHealthPercent(unitId, round)
+	if UnitExists(unitId) then
+		local maxHp = UnitHealthMax(unitId)
+		if maxHp and maxHp > 0 then
+			if round then
+				return math.floor(UnitHealth(unitId) / maxHp * 100)
+			else
+				return UnitHealth(unitId) / maxHp * 100
+			end
+		end
+	end
 end

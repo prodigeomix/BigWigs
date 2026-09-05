@@ -1,7 +1,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Chromaggus", "Blackwing Lair")
 
-module.revision = 30088
+module.revision = 30141
 module.enabletrigger = module.translatedName
 module.toggleoptions = {"frenzy", "enrage", -1, "breath", "vulnerability", "affliction", "bosskill"}
 

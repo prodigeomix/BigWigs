@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 Name: Babble-Boss-2.2
 Revision: 20005
 Author(s): ckknight (ckknight@gmail.com)
@@ -60,6 +60,11 @@ BabbleBoss:RegisterTranslations("enUS", function()
 		["Loktanag the Vile"] = true,
 		["Archdruid Kronn"] = true,
 		["Dreamform of Kronn"] = true,
+		["Trioch the Devourer"] = true,
+		["Selenaxx Foulheart"] = true,
+		["Ursol"] = true,
+		["Peroth'arn"] = true,
+		["Ezzel Darkbrewer"] = true,
 		["Erennius"] = true,
 		["Dark Rider Champion"] = true,
 		["Lord Blackwald II"] = true,

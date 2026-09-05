@@ -1,8 +1,8 @@
 ## Interface: 11200
 
-## X-Revision: 30139
+## X-Revision: 30141
 ## X-Fork: Pepo
-## Title: |cFFFF8080Pepopo|r Big Wigs |cff7fff7f30139|r |cffabd473Turtle-WoW|r
+## Title: |cFFFF8080Pepopo|r Big Wigs |cff7fff7f30141|r |cffabd473Turtle-WoW|r
 ## Title-zhCN: |cffabd473Turtle-WoW|r Big Wigs
 ## Notes: Boss Mods with Timer bars.
 ## Notes-esES: Módulos para Jefes con barras temporizadoras.
@@ -136,6 +136,7 @@ Raids\AQ40\Brainwasher.lua
 
 Raids\BWL\Chromaggus.lua
 Raids\BWL\Ebonroc.lua
+Raids\BWL\Ezzel.lua
 Raids\BWL\Firemaw.lua
 Raids\BWL\Flamegor.lua
 Raids\BWL\Nefarian.lua
@@ -143,6 +144,7 @@ Raids\BWL\Vaelastrasz.lua
 Raids\BWL\Broodlord.lua
 Raids\BWL\Razorgore.lua
 Raids\BWL\Wyrmguards.lua
+Raids\BWL\Alchemists.lua
 
 Raids\MC\Lucifron.lua
 Raids\MC\BaronGeddon.lua
@@ -232,6 +234,8 @@ Raids\TMH\Ormanos.lua
 Raids\TMH\Rotgrowl.lua
 Raids\TMH\Ursol.lua
 Raids\TMH\Perotharn.lua
+Raids\TMH\Selenaxx.lua
+Raids\TMH\TimbermawTrash.lua
 
 Raids\Karazhan\LordBlackwaldII.lua
 Raids\Karazhan\BroodQueenAraxxna.lua

@@ -1,8 +1,7 @@
-
 local module, L = BigWigs:ModuleDeclaration("Nefarian", "Blackwing Lair")
 local victor = AceLibrary("Babble-Boss-2.2")["Lord Victor Nefarius"]
 
-module.revision = 30086
+module.revision = 30141
 module.enabletrigger = {"Nefarian", "Lord Victor Nefarius"}
 module.toggleoptions = {
 	"mc",
@@ -18,7 +17,6 @@ module.toggleoptions = {
 	"classcall",
 	"wildpolymorph",
 	"corruptedhealing",
-	"bopnef",
 	-1,
 	"boneconstructs",
 	"taillash", 
@@ -26,6 +24,8 @@ module.toggleoptions = {
 	"parry",
 	"bosskill"
 }
+
+local _, playerClass = UnitClass("player")
 
 L:RegisterTranslations("enUS", function() return {
 	cmd = "Nefarian",
@@ -76,10 +76,6 @@ L:RegisterTranslations("enUS", function() return {
 	corruptedhealing_name = "Corrupted Healing Alert",
 	corruptedhealing_desc = "Warn for Corrupted Healing",
 	
-	bopnef_cmd = "bopnef",
-	bopnef_name = "Blessing of Protection on Nefarian Alert",
-	bopnef_desc = "Warn for Blessing of Protection on Nefarian",
-	
 	boneconstructs_cmd = "boneconstructs",
 	boneconstructs_name = "Bone Constructs Alert",
 	boneconstructs_desc = "Warn for Bone Constructs",
@@ -101,8 +97,9 @@ L:RegisterTranslations("enUS", function() return {
 	trigger_mcOther2 = "(.+) %(.+%) is afflicted by Shadow Command", --CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE // CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE // CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE
 	trigger_mcOther = "(.+) is afflicted by Shadow Command", --CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE // CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE // CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE
 	trigger_mcFade = "Shadow Command fades from (.+).", --CHAT_MSG_SPELL_AURA_GONE_SELF // CHAT_MSG_SPELL_AURA_GONE_PARTY // CHAT_MSG_SPELL_AURA_GONE_OTHER
-	bar_mc = " MC",
-	msg_mc = " MC - Sheep!",
+	bar_mc = (playerClass=="MAGE" and " MC >sheep<") or (playerClass=="WARLOCK" and " MC >fear<") or " MC >target<",
+	msg_mc = " mind controlled!",
+	spell_mc = (playerClass=="MAGE" and "Polymorph") or (playerClass=="WARLOCK" and "Fear") or false,
 	trigger_deadOther = "(.+) dies.", --CHAT_MSG_COMBAT_FRIENDLY_DEATH
 	
 	bar_addCounter = "Drakonids Left",
@@ -124,10 +121,11 @@ L:RegisterTranslations("enUS", function() return {
 	--ShadowFlame 12.5sec after landingStart, lands 0.5-1sec after
 	trigger_landingNow = "BURN! You wretches! BURN!", --CHAT_MSG_MONSTER_YELL 22:14:23.782
 	
-	trigger_shadowFlame = "Nefarian begins to cast Shadow Flame.", --CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE
-	bar_shadowFlameCd = "Shadow Flame CD",
+	trigger_shadowFlameCast = "Nefarian begins to cast Shadow Flame.", --CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE - seems to no longer appear in logs since 1.18
 	bar_shadowFlameCast = "Casting Shadow Flame",
 	msg_shadowFlameCast = "Casting Shadow Flame!",
+	trigger_shadowFlameHit = "Nefarian's Shadow Flame hits", --CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE
+	bar_shadowFlameCd = "Shadow Flame CD",
 	
 	trigger_fear = "Nefarian begins to cast Bellowing Roar.", --CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE
 	bar_fearCd = "Fear CD",
@@ -148,28 +146,42 @@ L:RegisterTranslations("enUS", function() return {
 	msg_curse = " Veil of Shadow - Decurse!",
 
 	trigger_classCall_Druid = "Druids and your silly shapeshifting. Lets see it in action!", --CHAT_MSG_MONSTER_YELL
-	trigger_classCall_Hunter = "Hunters and your annoying pea%-shooters!", --CHAT_MSG_MONSTER_YELL
+	trigger_classCall_Hunter = "Hunters, why rely on your weapons so much%?", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Mage = "Mages too%?", --CHAT_MSG_MONSTER_YELL
-	trigger_classCall_Paladin = "Paladins... I've heard you have many lives. Show me.", --CHAT_MSG_MONSTER_YELL
+	trigger_classCall_Paladin = "Paladins, are you certain you are not a burden to your allies%?", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Priest = "Priests! If you're going to keep", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Rogue = "Rogues%? Stop hiding and face me!", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Shaman = "Shamans, show me", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Warlock = "Warlocks, you shouldn't be playing with magic you don't understand. See what happens%?", --CHAT_MSG_MONSTER_YELL
 	trigger_classCall_Warrior = "Warriors, I know you can hit harder than that! Lets see it!", --CHAT_MSG_MONSTER_YELL
 	
-	bar_classCall = "Class Call",
+	bar_classCallPair = "%s & %s Class Call",
+	bar_classCallFirst = "First Class Call",
+	bar_classCallSoon = "Class Call Soon",
 	
-	msg_classCall_Druid = "Druid Class Call - Stuck in Cat Form!",
-	msg_classCall_Hunter = "Hunter Class Call - Ranged Weapons Broken!",
-	msg_classCall_Mage = "Mage Class Call - Random Sheeps - Mages Ice Block or Get Away!",
-	msg_classCall_Paladin = "Paladin Class Call - Blessing of Protection on Nefarian!",
-	msg_classCall_Priest = "Priest Class Call - Direct Heals Hurt - Use Renew / Shield only!",
-	msg_classCall_Rogue = "Rogue Class Call - Rogues Teleported and Rooted - Turn the Boss!",
-	msg_classCall_Shaman = "Shaman Class Call - Kill Totems!",
-	msg_classCall_Warlock = "Warlock Class Call - Kill the Infernals!",
-	msg_classCall_Warrior = "Warrior Class Call - Stuck in Berserker Stance!",
+	DRUID = "Druid",
+	HUNTER = "Hunter",
+	MAGE = "Mage",
+	PALADIN = "Paladin",
+	PRIEST = "Priest",
+	ROGUE = "Rogue",
+	SHAMAN = "Shaman",
+	WARLOCK = "Warlock",
+	WARRIOR = "Warrior",
 	
-	msg_classCall_soon3 = "Class Call in 3 seconds - Hunters, swap Ranged Weapon!",
+	msg_classCall_DRUID = "Druid Call - Stuck in Cat Form!",
+	msg_classCall_HUNTER = "Hunter Call - All Weapons Broken!",
+	msg_classCall_MAGE = "Mage Call - Random Polymorph in LoS!",
+	msg_classCall_PALADIN = "Paladin Call - Harmful Blessings!",
+	msg_classCall_PRIEST = "Priest Call - Direct Heals Hurt - Use Renew / Shield only!",
+	msg_classCall_ROGUE = "Rogue Call - Rogues Teleported and Rooted!",
+	msg_classCall_SHAMAN = "Shaman Call - Kill Totems!",
+	msg_classCall_WARLOCK = "Warlock Call - Kill the Infernals!",
+	msg_classCall_WARRIOR = "Warrior Call - Stuck in Berserker Stance!",
+	
+	msg_classCall_soon3 = "Class Call in 3 seconds",
+	
+	warn_classCall = "YOUR CLASS CALL",
 	
 	trigger_wildPolymorphYou = "You are afflicted by Wild Polymorph.", --CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE --guessing
 	trigger_wildPolymorphOther = "(.+) is afflicted by Wild Polymorph.", --CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE // CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE --guessing
@@ -179,11 +191,6 @@ L:RegisterTranslations("enUS", function() return {
 	
 	trigger_corruptedHealing = "afflicted by Corrupted Healing", --CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE // CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE // CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE --guessing
 	msg_corruptedHealing = "A Priest's direct heal caused Corrupted Healing!",
-	
-	--lasts 5sec, but fade->regain doesn't always happen, he's bop'd by 30sec straight usually
-	trigger_bopNef = "Nefarian gains Improved Blessing of Protection.", --CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS
-	trigger_bopNefFade = "Improved Blessing of Protection fades from Nefarian.", --CHAT_MSG_SPELL_AURA_GONE_OTHER
-	bar_bopNef = "Nefarian Blessing of Protection",
 	
 	msg_lowHp = "Nefarian under 25% - Bone Constructs Soon (@ 20%)!",
 	
@@ -226,7 +233,6 @@ local timer = {
 	classCallDur = 30,
 	
 	wildPolymorph = 20,
-	bopNef = 30,
 	
 	tailLash = 2,
 }
@@ -252,18 +258,17 @@ local icon = {
 	curse = "Spell_Shadow_GatherShadows",
 
 	classCall = "Spell_Shadow_Charm",
-	Druid = "ability_druid_catformattack",
-	Hunter = "inv_ammo_arrow_01",
-	Mage = "spell_nature_polymorph",
-	Paladin = "spell_holy_sealofprotection",
-	Priest = "spell_holy_renew",
-	Rogue = "spell_shadow_teleport",
-	Shaman = "spell_totem_wardofdraining",
-	Warlock = "spell_shadow_summoninfernal",
-	Warrior = "ability_warrior_offensivestance",
+	DRUID = "ability_druid_catformattack",
+	HUNTER = "inv_ammo_arrow_01",
+	MAGE = "spell_nature_polymorph",
+	PALADIN = "spell_holy_sealofprotection",
+	PRIEST = "spell_holy_renew",
+	ROGUE = "spell_shadow_teleport",
+	SHAMAN = "spell_totem_wardofdraining",
+	WARLOCK = "spell_shadow_summoninfernal",
+	WARRIOR = "ability_warrior_offensivestance",
 
 	wildPolymorph = "spell_nature_polymorph",
-	bopNef = "spell_holy_sealofprotection",
 
 	boneConstructs = "inv_misc_bone_02",
 
@@ -292,7 +297,6 @@ local color = {
 	classCallDur = "Black",
 
 	wildPolymorph = "Black",
-	bopNef = "Black",
 }
 local syncName = {
 --Phase 1
@@ -306,26 +310,28 @@ local syncName = {
 	landingStart = "NefarianLandingStart"..module.revision,
 	landingNow = "NefarianLandingNow2"..module.revision,
 
-	shadowFlame = "NefarianShadowflame"..module.revision,
+	shadowFlameCast = "NefarianShadowflame"..module.revision,
+	shadowFlameHit = "NefarianShadowflameHit"..module.revision,
 
 	fear = "NefarianFear"..module.revision,
 
 	curse = "NefarianCurse"..module.revision,
 	curseFade = "NefarianCurseFade"..module.revision,
 
-	classCall = "NefarianClassCall"..module.revision,
+	classCallA = "NefarianClassCallA"..module.revision,
+	classCallB = "NefarianClassCallB"..module.revision,
 
 	wildPolymorph = "NefarianWildPolymorph"..module.revision,
 	wildPolymorphFade = "NefarianWildPolymorphFade"..module.revision,
 
 	corruptedHealing = "NefarianCorruptedHealing"..module.revision,
 
-	bopNef = "NefarianBop"..module.revision,
-	bopNefFade = "NefarianBopFade"..module.revision,
-
 	lowHp = "NefarianLowHp"..module.revision,
 
 	boneConstructs = "NefarianBoneConstructs"..module.revision,
+}
+local spellId = {
+	shadowFlame = 22539,
 }
 
 local drakonidsSelfCount = 0
@@ -338,8 +344,8 @@ local blueFound = nil
 local greenFound = nil
 local blackFound = nil
 local bronzeFound = nil
-local bopNefFadeCheck = nil
-local pallyCallTime = 0
+local lastClassCall = 0
+local classA = ""
 
 function module:OnEnable()
 	--self:RegisterEvent("CHAT_MSG_SAY", "Event") --Debug
@@ -357,16 +363,19 @@ function module:OnEnable()
 
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_SELF", "Event") --trigger_mcFade, trigger_fearWardFade, trigger_curseFade, trigger_wildPolymorphFade
 	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_PARTY", "Event") --trigger_mcFade, trigger_curseFade, trigger_wildPolymorphFade
-	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "Event") --trigger_mcFade, trigger_curseFade, trigger_wildPolymorphFade, trigger_bopNefFade
+	self:RegisterEvent("CHAT_MSG_SPELL_AURA_GONE_OTHER", "Event") --trigger_mcFade, trigger_curseFade, trigger_wildPolymorphFade
 
-	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "Event") --trigger_tailLash
-	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "Event") --trigger_shadowFlame, trigger_fear
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE", "Event") --trigger_tailLash, trigger_shadowFlameHit
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE", "Event") --trigger_shadowFlameHit
+	self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "Event") --trigger_shadowFlameCast, trigger_fear, trigger_shadowFlameHit
 
 	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS", "Event") --trigger_fearWard
 
-	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "Event") --trigger_bopNef
-
 	self:RegisterEvent("CHAT_MSG_COMBAT_SELF_MISSES", "Event") --trigger_parryYou
+	
+	if SUPERWOW_VERSION or SetAutoloot then
+		self:RegisterEvent("UNIT_CASTEVENT")
+	end
 
 
 --Phase 1
@@ -380,22 +389,21 @@ function module:OnEnable()
 	self:ThrottleSync(3, syncName.landingStart)
 	self:ThrottleSync(3, syncName.landingNow)
 
-	self:ThrottleSync(3, syncName.shadowFlame)
+	self:ThrottleSync(3, syncName.shadowFlameCast)
+	self:ThrottleSync(3, syncName.shadowFlameHit)
 
 	self:ThrottleSync(3, syncName.fear)
 
 	self:ThrottleSync(3, syncName.curse)
 	self:ThrottleSync(3, syncName.curseFade)
 
-	self:ThrottleSync(3, syncName.classCall)
+	self:ThrottleSync(3, syncName.classCallA)
+	self:ThrottleSync(3, syncName.classCallB)
 
 	self:ThrottleSync(0.5, syncName.wildPolymorph)
 	self:ThrottleSync(0.25, syncName.wildPolymorphFade)
 
 	self:ThrottleSync(1, syncName.corruptedHealing)
-
-	self:ThrottleSync(30, syncName.bopNef)
-	self:ThrottleSync(3, syncName.bopNefFade)
 
 	self:ThrottleSync(3, syncName.lowHp)
 
@@ -406,7 +414,6 @@ function module:OnSetup()
 	self.started = nil
 
 	self:RegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH") --bar_addCounter
-	self:RegisterEvent("CHAT_MSG_COMBAT_FRIENDLY_DEATH") --trigger_deadOther
 end
 
 function module:OnEngage()
@@ -419,8 +426,6 @@ function module:OnEngage()
 	greenFound = nil
 	blackFound = nil
 	bronzeFound = nil
-	bopNefFadeCheck = nil
-	pallyCallTime = 0
 
 	self:Bar(L["bar_mobsSpawn"], timer.mobSpawn, icon.phase, true, color.phase)
 
@@ -447,7 +452,7 @@ function module:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
 	end
 end
 
-function module:CHAT_MSG_COMBAT_FRIENDLY_DEATH(msg)
+function module:OnFriendlyDeath(msg)
 	if string.find(msg, L["trigger_deadOther"]) then
 		local _,_, deadPerson, _ = string.find(msg, L["trigger_deadOther"])
 		self:Sync(syncName.mcFade .. " " .. deadPerson)
@@ -476,27 +481,36 @@ function module:CHAT_MSG_MONSTER_YELL(msg)
 		self:Sync(syncName.landingNow)
 
 	elseif string.find(msg, L["trigger_classCall_Druid"]) then
-		self:Sync(syncName.classCall.." ".."Druid")
+		self:SyncClassCall("DRUID")
 	elseif string.find(msg, L["trigger_classCall_Hunter"]) then
-		self:Sync(syncName.classCall.." ".."Hunter")
+		self:SyncClassCall("HUNTER")
 	elseif string.find(msg, L["trigger_classCall_Mage"]) then
-		self:Sync(syncName.classCall.." ".."Mage")
+		self:SyncClassCall("MAGE")
 	elseif string.find(msg, L["trigger_classCall_Paladin"]) then
-		self:Sync(syncName.classCall.." ".."Paladin")
+		self:SyncClassCall("PALADIN")
 	elseif string.find(msg, L["trigger_classCall_Priest"]) then
-		self:Sync(syncName.classCall.." ".."Priest")
+		self:SyncClassCall("PRIEST")
 	elseif string.find(msg, L["trigger_classCall_Rogue"]) then
-		self:Sync(syncName.classCall.." ".."Rogue")
+		self:SyncClassCall("ROGUE")
 	elseif string.find(msg, L["trigger_classCall_Shaman"]) then
-		self:Sync(syncName.classCall.." ".."Shaman")
+		self:SyncClassCall("SHAMAN")
 	elseif string.find(msg, L["trigger_classCall_Warlock"]) then
-		self:Sync(syncName.classCall.." ".."Warlock")
+		self:SyncClassCall("WARLOCK")
 	elseif string.find(msg, L["trigger_classCall_Warrior"]) then
-		self:Sync(syncName.classCall.." ".."Warrior")
+		self:SyncClassCall("WARRIOR")
 
 	elseif msg == L["trigger_boneConstructs"] then
 		self:Sync(syncName.boneConstructs)
 	end
+end
+
+function module:SyncClassCall(class)
+	if lastClassCall + 3 < GetTime() then
+		self:Sync(syncName.classCallA.." "..class)
+	else
+		self:Sync(syncName.classCallB.." "..class)
+	end
+	lastClassCall = GetTime()
 end
 
 function module:PLAYER_TARGET_CHANGED()
@@ -534,8 +548,11 @@ function module:Event(msg)
 		self:Sync(syncName.mcFade .. " " .. mcFadePlayer)
 
 
-	elseif msg == L["trigger_shadowFlame"] then
-		self:Sync(syncName.shadowFlame)
+	elseif msg == L["trigger_shadowFlameCast"] then
+		self:Sync(syncName.shadowFlameCast)
+	
+	elseif string.find(msg, L["trigger_shadowFlameHit"]) then
+		self:Sync(syncName.shadowFlameHit)
 
 	elseif msg == L["trigger_fear"] then
 		self:Sync(syncName.fear)
@@ -575,11 +592,6 @@ function module:Event(msg)
 		self:Sync(syncName.corruptedHealing)
 
 
-	elseif msg == L["trigger_bopNef"] then
-		self:Sync(syncName.bopNef)
-	elseif msg == L["trigger_bopNefFade"] then
-		self:Sync(syncName.bopNefFade)
-
 	elseif string.find(msg, L["trigger_tailLash"]) and self.db.profile.taillash then
 		self:TailLash()
 
@@ -589,6 +601,14 @@ function module:Event(msg)
 				self:ParryYou()
 			end
 		end
+	end
+end
+
+function module:UNIT_CASTEVENT(caster,target,action,spell,castTime)
+	if spell == spellId.shadowFlame and action == "START" then
+		self:Sync(syncName.shadowFlameCast)
+		self:DelayedSync(castTime/1000, syncName.shadowFlameHit)
+		return
 	end
 end
 
@@ -615,8 +635,13 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.landingNow then
 		self:LandingNow()
 
-	elseif sync == syncName.shadowFlame and self.db.profile.shadowflame then
-		self:ShadowFlame()
+	elseif sync == syncName.shadowFlameCast and self.db.profile.shadowflame then
+		self:RemoveBar(L["bar_shadowFlameCd"])
+		self:Bar(L["bar_shadowFlameCast"], timer.shadowFlameCast, icon.shadowFlame, true, color.shadowFlameCast)
+		self:Message(L["msg_shadowFlameCast"], "Urgent", false, nil, false)
+	elseif sync == syncName.shadowFlameHit and self.db.profile.shadowflame then
+		self:RemoveBar(L["bar_shadowFlameCd"])
+		self:IntervalBar(L["bar_shadowFlameCd"], timer.shadowFlameCd[1], timer.shadowFlameCd[2], icon.shadowFlame, true, color.shadowFlameCd)
 
 	elseif sync == syncName.fear and self.db.profile.fear then
 		self:Fear()
@@ -626,7 +651,9 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 	elseif sync == syncName.curseFade and rest and self.db.profile.curse then
 		self:CurseFade(rest)
 
-	elseif sync == syncName.classCall and rest and self.db.profile.classcall then
+	elseif sync == syncName.classCallA and rest then
+		classA = rest
+	elseif sync == syncName.classCallB and rest and self.db.profile.classcall then
 		self:ClassCall(rest)
 
 	elseif sync == syncName.wildPolymorph and rest and self.db.profile.wildpolymorph then
@@ -636,11 +663,6 @@ function module:BigWigs_RecvSync(sync, rest, nick)
 
 	elseif sync == syncName.corruptedHealing and self.db.profile.corruptedhealing then
 		self:CorruptedHealing()
-
-	elseif sync == syncName.bopNef and self.db.profile.bopnef then
-		self:BopNef()
-	elseif sync == syncName.bopNefFade and self.db.profile.bopnef then
-		self:BopNefFade()
 
 	elseif sync == syncName.lowHp and self.db.profile.boneconstructs then
 		self:LowHp()
@@ -653,10 +675,10 @@ end
 
 --Phase 1
 function module:Mc(rest)
-	self:Bar(rest..L["bar_mc"], timer.mcDur, icon.mc, true, color.mc)
+	self:ClickBar(rest..L["bar_mc"], timer.mcDur, icon.mc, rest, L["spell_mc"], true, color.mc)
 	self:Message(rest..L["msg_mc"], "Urgent", false, nil, false)
 
-	if UnitClass("Player") == "Mage" or UnitClass("Player") == "Warlock" then
+	if playerClass == "MAGE" or playerClass == "WARLOCK" then
 		self:WarningSign(icon.mc, 1)
 		self:Sound("Info")
 	end
@@ -742,7 +764,7 @@ function module:LandingNow()
 		self:Bar(L["bar_fearCd"], timer.fearFirstCd, icon.fear, true, color.fearCd)
 		self:DelayedBar(timer.fearFirstCd, L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
 
-		if UnitClass("Player") == "Warrior" then
+		if playerClass == "WARRIOR" then
 			self:DelayedWarningSign(timer.fearFirstCd - 3.5, icon.berserker, 1)
 			self:DelayedSound(timer.fearFirstCd - 3.5, "BikeHorn")
 		end
@@ -753,18 +775,9 @@ function module:LandingNow()
 	end
 
 	if self.db.profile.classcall then
-		self:Bar(L["bar_classCall"].." CD", timer.classCallFirstCd, icon.classCall, true, color.classCallCd)
+		self:Bar(L["bar_classCallFirst"], timer.classCallFirstCd, icon.classCall, true, color.classCallCd)
 		self:DelayedMessage(timer.classCallFirstCd - 3, L["msg_classCall_soon3"], "Personal", false, nil, false)
 	end
-end
-
-function module:ShadowFlame()
-	self:RemoveBar(L["bar_shadowFlameCd"])
-
-	self:Bar(L["bar_shadowFlameCast"], timer.shadowFlameCast, icon.shadowFlame, true, color.shadowFlameCast)
-	self:Message(L["msg_shadowFlameCast"], "Urgent", false, nil, false)
-
-	self:DelayedIntervalBar(timer.shadowFlameCast, L["bar_shadowFlameCd"], timer.shadowFlameCd[1], timer.shadowFlameCd[2], icon.shadowFlame, true, color.shadowFlameCd)
 end
 
 function module:FearWard()
@@ -799,7 +812,7 @@ function module:Fear()
 	self:DelayedBar(timer.fearCast, L["bar_fearCd"], timer.fearCd, icon.fear, true, color.fearCd)
 	self:DelayedBar(timer.fearCast + timer.fearCd, L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
 
-	if UnitClass("Player") == "Warrior" then
+	if playerClass == "WARRIOR" then
 		self:DelayedWarningSign(timer.fearCast + timer.fearCd - 3.5, icon.berserker, 1)
 		self:DelayedSound(timer.fearCast + timer.fearCd - 3.5, "BikeHorn")
 	end
@@ -810,7 +823,7 @@ function module:Curse(rest)
 
 	self:Bar(rest..L["bar_curseDur"], timer.curseDur, icon.curse, true, color.curseDur)
 
-	if UnitClass("Player") == "Mage" or UnitClass("Player") == "Druid" then
+	if playerClass == "MAGE" or playerClass == "DRUID" then
 		self:Message(rest..L["msg_curse"], "Urgent", false, nil, false)
 		self:Sound("Info")
 		self:WarningSign(icon.curse, timer.curseDur)
@@ -824,37 +837,30 @@ function module:CurseFade(rest)
 	self:RemoveWarningSign(icon.curse)
 end
 
-function module:ClassCall(rest)
-	self:RemoveBar(L["bar_classCall"].." CD")
-	self:CancelDelayedBar(L["bar_classCall"].." Soon")
-	self:RemoveBar(L["bar_classCall"].." Soon")
+function module:ClassCall(classB)
+	self:RemoveBar(L["bar_classCallFirst"])
+	self:CancelDelayedBar(L["bar_classCallSoon"])
+	self:RemoveBar(L["bar_classCallSoon"])
 
-	self:Bar(rest.." "..L["bar_classCall"], timer.classCallDur, icon.classCall, true, color.classCallDur)
-	self:Message(L["msg_classCall_"..rest], "Positive", false, nil, false)
-
-	if UnitClass("Player") == rest then
-		self:Sound("Beware")
-		self:WarningSign(icon[rest], 2, true, "YOUR CLASS CALL")
-	end
+	self:Bar(string.format(L["bar_classCallPair"],L[classA],L[classB]), timer.classCallDur, icon.classCall, true, color.classCallDur)
+	self:Message(L["msg_classCall_"..classA], "Positive", false, nil, false)
+	self:Message(L["msg_classCall_"..classB], "Positive", false, nil, false)
 	
-	if rest == "Paladin" then
-		self:ThrottleSync(1, syncName.bopNef)
-		bopNefFadeCheck = nil
-		self:CancelScheduledEvent("Nefarian_BopNef_EnableFadeCheck")
-		self:ScheduleEvent("Nefarian_BopNef_EnableFadeCheck", self.BopNef_EnableFadeCheck, 30, self)
-		
-		pallyCallTime = GetTime()
+
+	if playerClass == classA or playerClass == classB then
+		self:Sound("Beware")
+		self:WarningSign(icon[playerClass], 2, true, L["warn_classCall"])
 	end
 	
 	--class call is every 25-35sec, dur is 30sec, 2 class calls can overlap by 5sec, can also have 5sec without class call
-	self:DelayedBar(timer.classCallDur, L["bar_classCall"].." Soon", timer.classCallCd[2] - timer.classCallDur, icon.classCall, true, color.classCallCd)
+	self:DelayedBar(timer.classCallDur, L["bar_classCallSoon"], timer.classCallCd[2] - timer.classCallDur, icon.classCall, true, color.classCallCd)
 	self:DelayedMessage(timer.classCallDur - 8, L["msg_classCall_soon3"], "Personal", false, nil, false)
 end
 
 function module:WildPolymorph(rest)
 	self:Bar(rest..L["bar_wildPolymorph"], timer.wildPolymorph, icon.wildPolymorph, true, color.wildPolymorph)
 	
-	if UnitClass("Player") == "Priest" or UnitClass("Player") == "Paladin" then
+	if playerClass == "PRIEST" or playerClass == "PALADIN" then
 		self:Message(rest..L["msg_wildPolymorph"], "Urgent", false, nil, false)
 		self:Sound("Info")
 		self:WarningSign(icon.wildPolymorph, 0.7)
@@ -866,24 +872,6 @@ end
 
 function module:CorruptedHealing()
 	self:Message(L["msg_corruptedHealing"])
-end
-
-function module:BopNef()
-	self:ThrottleSync(30, syncName.bopNef)
-	
-	if (GetTime() - pallyCallTime) < 20 then
-		self:Bar(L["bar_bopNef"], timer.bopNef, icon.bopNef, true, color.bopNef)
-	else
-		self:Bar(L["bar_bopNef"], 5, icon.bopNef, true, color.bopNef)
-	end
-end
-function module:BopNef_EnableFadeCheck()
-	bopNefFadeCheck = true
-end
-function module:BopNefFade()
-	if bopNefFadeCheck then
-		self:RemoveBar(L["bar_bopNef"])
-	end
 end
 
 function module:LowHp()
