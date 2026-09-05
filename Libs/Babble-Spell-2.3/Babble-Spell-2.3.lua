@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 Name: Babble-Spell-2.3
 Revision: $Rev: 25188 $
 Author(s): ckknight (ckknight@gmail.com)
