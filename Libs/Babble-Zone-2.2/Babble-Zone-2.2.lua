@@ -10,7 +10,7 @@ Dependencies: AceLibrary, AceLocale-2.2
 ]]
 
 local MAJOR_VERSION = "Babble-Zone-2.2"
-local MINOR_VERSION = tonumber(string.sub("$Revision: 17781 $", 12, -3))
+local MINOR_VERSION = 30141
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 

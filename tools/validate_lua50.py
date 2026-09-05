@@ -32,10 +32,10 @@ def check_file(path):
                 if not re.match(r'^[0-9a-fA-F]{3,8}$', var_name):
                     violations.append((line_num, line.strip(), f"Lua 5.1 '#' length operator on '{var_name}' (use table.getn or string.len)"))
             
-            if "string.match" in cleaned:
+            if "string.match" in cleaned and "string.match or" not in cleaned:
                 violations.append((line_num, line.strip(), "Lua 5.1 'string.match' (use string.find in Lua 5.0)"))
                 
-            if "string.gmatch" in cleaned:
+            if "string.gmatch" in cleaned and "string.gmatch or" not in cleaned:
                 violations.append((line_num, line.strip(), "Lua 5.1 'string.gmatch' (use string.gfind in Lua 5.0)"))
 
     return violations

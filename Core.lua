@@ -743,6 +743,19 @@ function BigWigs.modulePrototype:SetRaidTargetForPlayer(player, mark)
 	end
 	self.storedPlayerMarks[player] = previousMark
 
+	-- Store initial mark if not already stored
+	if not self.initialPlayerMarks then
+		self.initialPlayerMarks = {}
+	end
+	if self.initialPlayerMarks[player] == nil then
+		self.initialPlayerMarks[player] = previousMark
+	end
+
+	-- look up mark index if name string was input
+	if type(mark) == "string" then
+		mark = BigWigs:RaidTargetLookup(mark)
+	end
+
 	SetRaidTarget(playerUnit, mark)
 	return true
 end
@@ -766,8 +779,11 @@ function BigWigs.modulePrototype:GetAvailableRaidMark(excludeMarks, reverse)
 	end
 
 	-- Add excluded marks to used marks
-	for _, mark in pairs(excludeMarks) do
-		usedMarks[mark] = true
+	for _, mark in ipairs(excludeMarks) do
+		local markIndex = type(mark) == "string" and BigWigs:RaidTargetLookup(mark) or mark
+		if markIndex then
+			usedMarks[markIndex] = true
+		end
 	end
 
 	-- Add recently used marks (within the last second) to used marks
