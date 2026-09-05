@@ -1,4 +1,5 @@
 local module, L = BigWigs:ModuleDeclaration("Ezzel Darkbrewer", "Blackwing Lair")
+local print = print or function(t) if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage(tostring(t)) end end
 
 -- module variables
 module.revision = 30141
