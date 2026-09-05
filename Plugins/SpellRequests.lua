@@ -169,16 +169,16 @@ local function GetSpellSlot(targetSpellName)
 	return nil;
 end
 
-function string:split(delimiter)
+function string.split(str, delimiter)
 	local result = {}
 	local from = 1
-	local delim_from, delim_to = string.find(self, delimiter, from)
+	local delim_from, delim_to = string.find(str, delimiter, from)
 	while delim_from do
-		table.insert(result, string.sub(self, from, delim_from - 1))
+		table.insert(result, string.sub(str, from, delim_from - 1))
 		from = delim_to + 1
-		delim_from, delim_to = string.find(self, delimiter, from)
+		delim_from, delim_to = string.find(str, delimiter, from)
 	end
-	table.insert(result, string.sub(self, from))
+	table.insert(result, string.sub(str, from))
 	return result
 end
 
@@ -1083,7 +1083,7 @@ function BigWigsSpellRequests:BigWigs_RecvSync(sync, data)
 		end
 	elseif command == cooldownResponseCommand then
 		local requestingPlayerName, cooldownPlayerName, cooldown = self:ParseCooldownResponse(spellArgs)
-		if requestingPlayerName == self.playerName then
+		if requestingPlayerName and requestingPlayerName == self.playerName and cooldownPlayerName then
 			-- cancel timeout event
 			self:CancelScheduledEvent(BigWigsSpellRequests.timeoutEvent .. spellShortName)
 			-- check cooldownPlayerName throttle

@@ -600,7 +600,7 @@ end
 
 function BigWigsCommonAuras:SpellStatusV2_SpellCastFailure(sId, sName, sRank, sFullName, isActiveSpell, UIEM_Message, CMSFLP_SpellName, CMSFLP_Message)
 	-- do nothing if we are casting a spell but the error doesn't consern that spell, thanks Iceroth.
-	if (spellStatus:IsCastingOrChanneling() and not spellStatus:IsActiveSpell(sId, sName)) then
+	if spellStatus and spellStatus:IsCastingOrChanneling() and not spellStatus:IsActiveSpell(sId, sName) then
 		return
 	end
 	if self:IsEventScheduled("bwcaspellcast") then
