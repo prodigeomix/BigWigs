@@ -654,7 +654,9 @@ function BigWigs.modulePrototype:Disengage()
 		self:RemoveIcon()
 		self:RemoveWarningSign("", true)
 		BigWigsBars:Disable(self)
-		BigWigsBars:BigWigs_HideCounterBars()
+		if BigWigsBars.BigWigs_HideCounterBars then
+			BigWigsBars:BigWigs_HideCounterBars()
+		end
 
 		self:RemoveProximity()
 

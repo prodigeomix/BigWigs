@@ -875,6 +875,10 @@ function BigWigsBars:BigWigs_StopCounterBar(module, text)
 	BigWigsBars:BigWigs_StopBar(module, text)
 end
 
+function BigWigsBars:BigWigs_HideCounterBars()
+	-- All module bars are cleaned up via BigWigsBars:Disable(module)
+end
+
 function BigWigsBars:BigWigs_SetCounterBar(module, text, value)
 	if (not text) or (value == nil) or (value < 0) then
 		return

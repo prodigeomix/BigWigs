@@ -897,3 +897,113 @@ function module:ParryYou()
 	self:Message(L["msg_parryYou"], "Personal", false, nil, false)
 	self:Sound("Info")
 end
+
+function module:Test()
+	BigWigs:ToggleActive(true)
+	self:Engage()
+
+	local player = UnitName("player")
+	local raid1 = UnitName("raid1") or "Raid1"
+	local classTrigger = L["trigger_classCall_Priest"]
+	if playerClass == "WARRIOR" then
+		classTrigger = L["trigger_classCall_Warrior"]
+	elseif playerClass == "MAGE" then
+		classTrigger = L["trigger_classCall_Mage"]
+	elseif playerClass == "WARLOCK" then
+		classTrigger = L["trigger_classCall_Warlock"]
+	elseif playerClass == "HUNTER" then
+		classTrigger = L["trigger_classCall_Hunter"]
+	elseif playerClass == "ROGUE" then
+		classTrigger = L["trigger_classCall_Rogue"]
+	elseif playerClass == "DRUID" then
+		classTrigger = L["trigger_classCall_Druid"]
+	elseif playerClass == "PALADIN" then
+		classTrigger = L["trigger_classCall_Paladin"]
+	elseif playerClass == "SHAMAN" then
+		classTrigger = L["trigger_classCall_Shaman"]
+	end
+
+	local events = {
+		-- Phase 1 Engage & Drakonids
+		{ time = 1, func = function()
+			local msg = "Let the games begin!"
+			print("Test: " .. msg)
+			self:CHAT_MSG_MONSTER_YELL(msg)
+		end },
+		{ time = 3, func = function()
+			local msg = "Chromatic Drakonid dies."
+			print("Test: Drakonid kill (1/42)")
+			self:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
+		end },
+		{ time = 5, func = function()
+			local msg = raid1 .. " is afflicted by Shadow Command"
+			print("Test: MC - " .. msg)
+			self:Event(msg)
+		end },
+		{ time = 8, func = function()
+			local msg = "Shadow Command fades from " .. raid1 .. "."
+			print("Test: MC fade - " .. msg)
+			self:Event(msg)
+		end },
+
+		-- Phase 2 Landing
+		{ time = 10, func = function()
+			local msg = "Well done, my minions. The mortals' courage begins to wane! Now, let's see how they contend with the true Lord of Blackrock Spire!!!"
+			print("Test: Nefarian Landing - " .. msg)
+			self:CHAT_MSG_MONSTER_YELL(msg)
+		end },
+		{ time = 14, func = function()
+			local msg = "BURN! You wretches! BURN!"
+			print("Test: Nefarian Landing Breath - " .. msg)
+			self:CHAT_MSG_MONSTER_YELL(msg)
+		end },
+
+		-- Shadow Flame & Fear
+		{ time = 17, func = function()
+			local msg = "Nefarian begins to cast Shadow Flame."
+			print("Test: Shadow Flame cast - " .. msg)
+			self:Event(msg)
+		end },
+		{ time = 19, func = function()
+			local msg = "Nefarian's Shadow Flame hits " .. raid1 .. " for 4200 Fire damage."
+			print("Test: Shadow Flame hit - " .. msg)
+			self:Event(msg)
+		end },
+		{ time = 22, func = function()
+			local msg = "Nefarian begins to cast Bellowing Roar."
+			print("Test: Bellowing Roar - " .. msg)
+			self:Event(msg)
+		end },
+		{ time = 26, func = function()
+			local msg = player .. " is afflicted by Veil of Shadow."
+			print("Test: Veil of Shadow - " .. msg)
+			self:Event(msg)
+		end },
+
+		-- Class Call (calls player's own class!)
+		{ time = 29, func = function()
+			print("Test: Class Call - " .. classTrigger)
+			self:CHAT_MSG_MONSTER_YELL(classTrigger)
+		end },
+
+		-- Phase 3 Bone Constructs
+		{ time = 35, func = function()
+			local msg = "Impossible! Rise my minions! Serve your master once more!"
+			print("Test: Bone Constructs (Phase 3) - " .. msg)
+			self:CHAT_MSG_MONSTER_YELL(msg)
+		end },
+
+		-- End of Test
+		{ time = 40, func = function()
+			print("Test: Disengage")
+			module:Disengage()
+		end },
+	}
+
+	for i, event in ipairs(events) do
+		self:ScheduleEvent("NefarianTest" .. i, event.func, event.time)
+	end
+
+	self:Message(module.translatedName .. " test started", "Positive")
+	return true
+end
