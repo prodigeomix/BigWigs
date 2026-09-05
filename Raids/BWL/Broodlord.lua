@@ -48,7 +48,7 @@ L:RegisterTranslations("enUS", function() return {
 } end )
 
 local timer = {
-	msFirstCd = 48,--first supposed to be 25, saw 48!?
+	msFirstCd = 30, -- Observed at 32.61s in 2026-09-04 log (was 15.4s late)
 	msCd = 20,--cd supposed to be {20,30}, saw 26, 27
 	msSoon = 10,
 	msDur = 5,

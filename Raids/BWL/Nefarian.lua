@@ -212,10 +212,9 @@ local timer = {
 	shadowFlameCd = {16.5,23}, --saw 18.891 to 25.002, minus 2sec cast
 	shadowFlameCast = 2,
 	
-	fearFirstCd = 25, --saw 26.03
-		--saw 25.11 to 29.929
-	fearCd = 23.5, --show Berserker @ timer.fearCd - 3.5
-	fearSoon = 5,
+	fearFirstCd = 26.5, -- First fear observed at 26.0s in 2026-09-04 log
+	fearCd = 26.5,      -- Fear interval observed at 28.8s average (range 26-30s); show Berserker @ timer.fearCd - 3.5
+	fearSoon = 3.5,
 	fearCast = 1.5,
 	
 	curseFirstCd = 16, --saw 16.164
