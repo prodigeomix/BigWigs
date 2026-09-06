@@ -56,11 +56,7 @@ def should_include_file(rel_path: Path) -> bool:
     if filename in EXCLUDED_FILES or filename.startswith("."):
         return False
 
-    suffix = rel_path.suffix.lower()
-    if suffix in EXCLUDED_EXTENSIONS:
-        return False
-
-    return True
+    return rel_path.suffix.lower() not in EXCLUDED_EXTENSIONS
 
 
 def package_addon(repo_root: Path, output_path: Path) -> int:

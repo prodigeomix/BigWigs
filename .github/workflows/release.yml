@@ -49,13 +49,13 @@ jobs:
           else
             TAG="${{ github.ref_name }}"
           fi
-          echo "RELEASE_TAG=${TAG}" >> "$GITHUB_ENV"
-          echo "VERSION_CLEAN=$(echo ${TAG} | sed 's/^v//')" >> "$GITHUB_ENV"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version_clean=$(echo ${TAG} | sed 's/^v//')" >> "$GITHUB_OUTPUT"
 
       - name: Package BigWigs Distribution Zip
         run: |
           mkdir -p dist
-          python tools/package_release.py --version "${VERSION_CLEAN}" --output-dir dist
+          python tools/package_release.py --version "${{ steps.vars.outputs.version_clean }}" --output-dir dist
 
       - name: Collect Release Assets
         id: assets
@@ -68,17 +68,17 @@ jobs:
             ASSETS="${ASSETS}"$'\n'"BigWigs_30141_Report.pdf"
           fi
           {
-            echo "RELEASE_FILES<<EOF"
+            echo "files<<EOF"
             echo "${ASSETS}"
             echo "EOF"
-          } >> "$GITHUB_ENV"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: BigWigs ${{ env.RELEASE_TAG }}
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: BigWigs ${{ steps.vars.outputs.tag }}
           draft: ${{ inputs.draft || false }}
           prerelease: ${{ inputs.prerelease || false }}
           generate_release_notes: true
-          files: ${{ env.RELEASE_FILES }}
+          files: ${{ steps.assets.outputs.files }}
