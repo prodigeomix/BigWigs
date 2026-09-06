@@ -361,6 +361,8 @@ local spellId = {
 local drakonidsSelfCount = 0
 local drakonidsDead = 0
 local drakonidsDeadMax = 44 -- nef spawns at 40 dead, add stop summoning at 44
+---@type boolean?
+local fearWard = nil
 local lowHp = nil
 local phase = "phase1"
 local redFound = nil
@@ -455,6 +457,7 @@ end
 function module:OnEngage()
 	drakonidsDead = 0
 	drakonidsSelfCount = 0
+	fearWard = nil
 	lowHp = nil
 	phase = "phase1"
 	redFound = nil
@@ -783,11 +786,15 @@ function module:McFade(rest)
 end
 
 function module:DrakonidCounter(rest)
-	if tonumber(rest) > drakonidsDead then
-		drakonidsDead = tonumber(rest)
+	local dead = tonumber(rest)
+	if not dead then return end
+
+	dead = math.floor(dead)
+	if dead > drakonidsDead then
+		drakonidsDead = dead
 		self:TriggerEvent("BigWigs_SetCounterBar", self, L["bar_addCounter"], drakonidsDead)
 	end
-	if tonumber(rest) >= drakonidsDeadMax then
+	if dead >= drakonidsDeadMax then
 		self:TriggerEvent("BigWigs_StopCounterBar", self, L["bar_addCounter"])
 	end
 end
