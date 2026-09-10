@@ -1,7 +1,7 @@
 local module, L = BigWigs:ModuleDeclaration("Nefarian", "Blackwing Lair")
 local victor = AceLibrary("Babble-Boss-2.2")["Lord Victor Nefarius"]
 
-module.revision = 30141
+module.revision = 30142
 module.enabletrigger = {"Nefarian", "Lord Victor Nefarius"}
 module.toggleoptions = {
 	"mc",
@@ -218,16 +218,16 @@ local timer = {
 	landingShadowFlame = 12.4, --doesn't do damage on twow, not showing this bar
 	
 	shadowFlameFirstCd = 19.7, --saw 19.747
-	shadowFlameCd = {16.5,23}, --saw 18.891 to 25.002, minus 2sec cast
+	shadowFlameCd = {16.5,25}, --9/4 calibration: observed 19.6-24.95s (minus 2sec cast); old max 23 was 2s too low
 	shadowFlameCast = 2,
 	
-	fearFirstCd = 26.5, -- First fear observed at 26.0s in 2026-09-04 log
-	fearCd = 26.5,      -- Fear interval observed at 28.8s average (range 26-30s); show Berserker @ timer.fearCd - 3.5
+	fearFirstCd = 18.5, -- 9/4 log: first fear at 18.6s (pull1) / 20.0s (pull2) from landingNow yell; using conservative min
+	fearCd = {25,30},   -- 9/4 log: intervals 25.17-30.03s (pull1), 26.00-29.98s (pull2)
 	fearSoon = 3.5,
 	fearCast = 1.5,
 	
-	curseFirstCd = 16, --saw 16.164
-	curseCd = {10,15}, --saw 10.613 to 14.162
+	curseFirstCd = 5.0, -- 9/4 log: first Veil 5.1s (pull1) / 6.2s (pull2) from landingNow yell; OLD: 16. May be class-call-tied, needs more data
+	curseCd = {10,16}, --9/4 log: intervals 10.17-15.99s across both pulls; old max was 15
 	curseDur = 6,
 	
 	classCallFirstCd = 26.5, --saw 26.545
@@ -846,12 +846,14 @@ function module:LandingNow()
 	end
 
 	if self.db.profile.fear then
+		-- 9/4 calibration: first fear fires ~5.6s after landing; show fearSoon bar immediately
 		self:Bar(L["bar_fearCd"], timer.fearFirstCd, icon.fear, true, color.fearCd)
-		self:DelayedBar(timer.fearFirstCd, L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
+		local firstSoonDelay = math.max(0, timer.fearFirstCd - timer.fearSoon)
+		self:DelayedBar(firstSoonDelay, L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
 
 		if playerClass == "WARRIOR" then
-			self:DelayedWarningSign(timer.fearFirstCd - 3.5, icon.berserker, 1)
-			self:DelayedSound(timer.fearFirstCd - 3.5, "BikeHorn")
+			self:DelayedWarningSign(math.max(0, timer.fearFirstCd - 3.5), icon.berserker, 1)
+			self:DelayedSound(math.max(0, timer.fearFirstCd - 3.5), "BikeHorn")
 		end
 	end
 
@@ -894,12 +896,13 @@ function module:Fear()
 	self:WarningSign(icon.fear, 0.7)
 	self:Sound("Alarm")
 
-	self:DelayedBar(timer.fearCast, L["bar_fearCd"], timer.fearCd, icon.fear, true, color.fearCd)
-	self:DelayedBar(timer.fearCast + timer.fearCd, L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
+	-- 9/4 calibration: fearCd is now a {min,max} range; use IntervalBar for the CD
+	self:DelayedIntervalBar(timer.fearCast, L["bar_fearCd"], timer.fearCd[1], timer.fearCd[2], icon.fear, true, color.fearCd)
+	self:DelayedBar(timer.fearCast + timer.fearCd[2], L["bar_fearSoon"], timer.fearSoon, icon.fear, true, color.fearSoon)
 
 	if playerClass == "WARRIOR" then
-		self:DelayedWarningSign(timer.fearCast + timer.fearCd - 3.5, icon.berserker, 1)
-		self:DelayedSound(timer.fearCast + timer.fearCd - 3.5, "BikeHorn")
+		self:DelayedWarningSign(timer.fearCast + timer.fearCd[2] - 3.5, icon.berserker, 1)
+		self:DelayedSound(timer.fearCast + timer.fearCd[2] - 3.5, "BikeHorn")
 	end
 end
 
