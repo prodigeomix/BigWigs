@@ -9,11 +9,14 @@ local L = AceLibrary("AceLocale-2.2"):new("BigWigs")
 local surface = AceLibrary("Surface-1.0")
 
 surface:Register("Armory", "Interface\\AddOns\\BigWigs\\Textures\\Armory")
+surface:Register("BantoBar", "Interface\\AddOns\\BigWigs\\Textures\\default")
+surface:Register("Charcoal", "Interface\\AddOns\\BigWigs\\Textures\\Charcoal")
+surface:Register("DragonFlight", "Interface\\AddOns\\BigWigs\\Textures\\DF-bar")
+surface:Register("Glaze", "Interface\\AddOns\\BigWigs\\Textures\\glaze")
 surface:Register("Otravi", "Interface\\AddOns\\BigWigs\\Textures\\otravi")
 surface:Register("Smooth", "Interface\\AddOns\\BigWigs\\Textures\\smooth")
-surface:Register("Glaze", "Interface\\AddOns\\BigWigs\\Textures\\glaze")
-surface:Register("Charcoal", "Interface\\AddOns\\BigWigs\\Textures\\Charcoal")
-surface:Register("BantoBar", "Interface\\AddOns\\BigWigs\\Textures\\default")
+
+
 
 ----------------------------
 --      Localization      --
