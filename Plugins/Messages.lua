@@ -16,6 +16,9 @@ L:RegisterTranslations("enUS", function()
 		["Messages"] = true,
 
 		["msg"] = true,
+		["enable"] = true,
+		["Enable"] = true,
+		["Enable message display."] = true,
 		["anchor"] = true,
 		["reset"] = true,
 		["rw"] = true,
@@ -69,6 +72,9 @@ L:RegisterTranslations("esES", function()
 		["Messages"] = "Mensajes",
 
 		["msg"] = "msg",
+		["enable"] = "activar",
+		["Enable"] = "Activar",
+		["Enable message display."] = "Activar la pantalla de mensajes.",
 		["anchor"] = "ancla",
 		["reset"] = true,
 		["rw"] = "rw",
@@ -122,6 +128,9 @@ L:RegisterTranslations("deDE", function()
 		["Messages"] = "Nachrichten",
 
 		["msg"] = "msg",
+		["enable"] = "aktivieren",
+		["Enable"] = "Aktivieren",
+		["Enable message display."] = "Nachrichtenanzeige aktivieren.",
 		["anchor"] = "verankerung",
 		["reset"] = true,
 		["rw"] = "rw",
@@ -175,6 +184,9 @@ L:RegisterTranslations("zhCN", function()
 		["Messages"] = "信息提示",
 
 		["msg"] = "消息",
+		["enable"] = "启用",
+		["Enable"] = "启用",
+		["Enable message display."] = "启用信息提示。",
 		["anchor"] = "框体锚点",
 		["reset"] = "重置",
 		["rw"] = "团队警报",
@@ -230,6 +242,7 @@ end)
 BigWigsMessages = BigWigs:NewModule(L["Messages"])
 BigWigsMessages.frames = {}
 BigWigsMessages.defaultDB = {
+	enable = true,
 	display = L["BigWigs frame"],
 	usecolors = true,
 	scale = 1.0,
@@ -240,21 +253,35 @@ BigWigsMessages.consoleOptions = {
 	name = L["Messages"],
 	desc = L["Options for the message frame."],
 	args = {
+		[L["enable"]] = {
+			type = "toggle",
+			name = L["Enable"],
+			desc = L["Enable message display."],
+			order = 1,
+			get = function()
+				return BigWigsMessages.db.profile.enable
+			end,
+			set = function(v)
+				BigWigsMessages.db.profile.enable = v
+			end,
+		},
 		[L["anchor"]] = {
 			type = "execute",
 			name = L["Anchor"],
 			desc = L["Show the message anchor frame."],
+			order = 2,
 			func = function()
 				BigWigsMessages:BigWigs_ShowAnchors()
 			end,
 			disabled = function()
-				return (BigWigsMessages.db.profile.display ~= L["BigWigs frame"])
+				return (BigWigsMessages.db.profile.enable == false or BigWigsMessages.db.profile.display ~= L["BigWigs frame"])
 			end,
 		},
 		[L["color"]] = {
 			type = "toggle",
 			name = L["Use colors"],
 			desc = L["Toggles white only messages ignoring coloring."],
+			order = 3,
 			get = function()
 				return BigWigsMessages.db.profile.usecolors
 			end,
@@ -262,11 +289,15 @@ BigWigsMessages.consoleOptions = {
 				BigWigsMessages.db.profile.usecolors = v
 			end,
 			map = { [true] = L["|cffff0000Co|cffff00fflo|cff00ff00r|r"], [false] = L["White"] },
+			disabled = function()
+				return (BigWigsMessages.db.profile.enable == false)
+			end,
 		},
 		[L["scale"]] = {
 			type = "range",
 			name = L["Message frame scale"],
 			desc = L["Set the message frame scale."],
+			order = 4,
 			min = 0.2,
 			max = 2.0,
 			step = 0.1,
@@ -280,13 +311,14 @@ BigWigsMessages.consoleOptions = {
 				end
 			end,
 			disabled = function()
-				return (BigWigsMessages.db.profile.display ~= L["BigWigs frame"])
+				return (BigWigsMessages.db.profile.enable == false or BigWigsMessages.db.profile.display ~= L["BigWigs frame"])
 			end,
 		},
 		[L["display"]] = {
 			type = "text",
 			name = L["Display"],
 			desc = L["Set where messages are displayed."],
+			order = 5,
 			get = function()
 				return BigWigsMessages.db.profile.display
 			end,
@@ -296,13 +328,20 @@ BigWigsMessages.consoleOptions = {
 			end,
 			message = L["Display is now set to %2$s"],
 			current = L["Display is currently set to %2$s"],
+			disabled = function()
+				return (BigWigsMessages.db.profile.enable == false)
+			end,
 		},
 		[L["reset"]] = {
 			type = "execute",
 			name = L["Reset position"],
 			desc = L["Reset the anchor position, moving it to the default location"],
+			order = 6,
 			func = function()
 				BigWigsMessages:ResetAnchor()
+			end,
+			disabled = function()
+				return (BigWigsMessages.db.profile.enable == false)
 			end,
 		},
 	},
@@ -373,6 +412,9 @@ function BigWigsMessages:ResetAnchor()
 end
 
 function BigWigsMessages:BigWigs_Message(text, color, noraidsay, sound, broadcastonly)
+	if self.db.profile.enable == false then
+		return
+	end
 	if not text then
 		return
 	end

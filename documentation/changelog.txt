@@ -2,6 +2,13 @@
 Changelog for BigWigs
 --------------------------------------
 
+Messages Plugin Enable Toggle & Alert Suppression - 2026-10-16 (Version 30146)
+-----------------------------------------------------------------------------
+(Plugins) Messages - Added master 'Enable' toggle option to Plugins -> Messages (localized for enUS, esES, deDE, zhCN). Allows players (such as tanks and healers) to completely suppress center-screen text alerts ('Shadow Flame casted', 'Urgent', etc.) without disabling timer bars in Plugins -> Bars.
+- BigWigs_Message event listener returns immediately when message display is disabled.
+- Timer bars in Plugins -> Bars, audio cues in Plugins -> Sound, and raid syncs remain fully functional and independent.
+
+
 Molten Core Polish & Native Compiler Verification - 2026-10-12 (Version 30145)
 -----------------------------------------------------------------------------
 (MC) Sorcerer-Thane Thaurissan - Added Rune of Power warning ('Floor Zone moving soon!') with recurring health-check event at 75%, 50%, and 25% boss HP.
