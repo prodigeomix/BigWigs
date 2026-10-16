@@ -173,7 +173,6 @@ function module:OnEngage()
 	if self.db.profile.sparks then
 		self:Message(L["msg_sparks"], "Attention")
 		self:Bar(string.format(L["bar_sparksCdCount"], 1), timer.sparksFirst, icon.sparks, true, color.sparks)
-		self:DelayedMessage(timer.sparksFirst - 2, string.format(L["msg_sparksSoonCount"], 1), "Attention", false, nil, false)
 		self:ScheduleEvent("EbonrocSparks", self.SparksSpawn, timer.sparksFirst, self)
 	end
 end
@@ -194,7 +193,6 @@ function module:SparksSpawn(wave)
 	
 	self:Message(string.format(L["msg_sparksSpawnCount"], self.sparksWaveCount), "Attention", false, nil, false)
 	self:Bar(string.format(L["bar_sparksCdCount"], self.sparksWaveCount + 1), timer.sparksCd, icon.sparks, true, color.sparks)
-	self:DelayedMessage(timer.sparksCd - 2, string.format(L["msg_sparksSoonCount"], self.sparksWaveCount + 1), "Attention", false, nil, false)
 	self:ScheduleEvent("EbonrocSparks", self.SparksSpawn, timer.sparksCd, self)
 end
 

@@ -207,7 +207,6 @@ def test_simulation_state_machine():
             if self.db.profile.sparks:
                 self.Message("Sparks: Immune - Dodge!", "Attention")
                 self.Bar("Sparks (1)", 16, "Spell_Fire_SelfDestruct", True, "Orange")
-                self.DelayedMessage(14, "Sparks (1) in 2s", "Attention")
                 self.ScheduleEvent("EbonrocSparks", self.SparksSpawn, 16, self)
 
         def SparksSpawn(self, wave=None):
@@ -222,7 +221,6 @@ def test_simulation_state_machine():
             self.RemoveBar(f"Sparks ({self.sparksWaveCount})")
             self.Message(f"Sparks ({self.sparksWaveCount})!", "Attention")
             self.Bar(f"Sparks ({self.sparksWaveCount + 1})", 8, "Spell_Fire_SelfDestruct", True, "Orange")
-            self.DelayedMessage(6, f"Sparks ({self.sparksWaveCount + 1}) in 2s", "Attention")
             self.ScheduleEvent("EbonrocSparks", self.SparksSpawn, 8, self)
 
         def OnEvent(self, msg, player_name="Testplayer"):
@@ -258,9 +256,8 @@ def test_simulation_state_machine():
     mod.OnEngage()
     assert "Sparks (1)" in mod.bars, "Engage failed to start 'Sparks (1)' bar"
     assert mod.bars["Sparks (1)"]["duration"] == 16, "Initial bar duration must be 16s"
-    assert "Sparks (1) in 2s" in mod.delayed_messages, "Missing 2s delayed message"
     assert "EbonrocSparks" in mod.scheduled_events, "Missing scheduled event"
-    print("     -> [OK] Initial 16s bar, 14s pre-warning, and event scheduled.")
+    print("     -> [OK] Initial 16s bar and event scheduled (no overlapping pre-warning).")
 
     # 2. Simulate Wave 1 Spawning
     print("  2. Simulating Wave 1 Spawning:")
