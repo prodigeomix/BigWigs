@@ -1,7 +1,7 @@
 
 local module, L = BigWigs:ModuleDeclaration("Ebonroc", "Blackwing Lair")
 
-module.revision = 30143
+module.revision = 30146
 module.enabletrigger = module.translatedName
 module.toggleoptions = {"wingbuffet", "shadowflame", "curse", "sparks", "sparksyou", "bosskill"}
 
@@ -49,14 +49,14 @@ L:RegisterTranslations("enUS", function() return {
 	bar_shadowOfEbonrocCd = "Shadow of Ebonroc CD",
 	
 	trigger_sparkHit = "Shadowflame Spark", --CHAT_MSG_COMBAT_CREATURE_VS_PARTY_HITS // CHAT_MSG_SPELL_CREATURE_VS_PARTY_DAMAGE
-	bar_sparksCd = "Next Sparks",
-	bar_sparksCdCount = "Next Sparks (%d)",
-	msg_sparksSoon = "Shadowflame Sparks in 2 seconds!",
-	msg_sparksSoonCount = "Shadowflame Sparks (%d) in 2 seconds!",
-	msg_sparksSpawn = "Shadowflame Sparks spawned!",
-	msg_sparksSpawnCount = "Shadowflame Sparks (%d) spawned!",
-	msg_sparksYou = "Shadowflame Spark attacking YOU!",
-	msg_sparks = "Shadowflame Sparks spawn every 8s - Damage Immune, watch aggro!",
+	bar_sparksCd = "Sparks",
+	bar_sparksCdCount = "Sparks (%d)",
+	msg_sparksSoon = "Sparks in 2s",
+	msg_sparksSoonCount = "Sparks (%d) in 2s",
+	msg_sparksSpawn = "Sparks!",
+	msg_sparksSpawnCount = "Sparks (%d)!",
+	msg_sparksYou = "SPARK ON YOU!",
+	msg_sparks = "Sparks: Immune - Dodge!",
 } end)
 
 local timer = {

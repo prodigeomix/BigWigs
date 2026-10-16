@@ -2,11 +2,17 @@
 Changelog for BigWigs
 --------------------------------------
 
-Messages Plugin Enable Toggle & Alert Suppression - 2026-10-16 (Version 30146)
------------------------------------------------------------------------------
+Messages Plugin Toggle & Ebonroc Sparks Laconic Alerts - 2026-10-16 (Version 30146)
+-----------------------------------------------------------------------------------
 (Plugins) Messages - Added master 'Enable' toggle option to Plugins -> Messages (localized for enUS, esES, deDE, zhCN). Allows players (such as tanks and healers) to completely suppress center-screen text alerts ('Shadow Flame casted', 'Urgent', etc.) without disabling timer bars in Plugins -> Bars.
 - BigWigs_Message event listener returns immediately when message display is disabled.
 - Timer bars in Plugins -> Bars, audio cues in Plugins -> Sound, and raid syncs remain fully functional and independent.
+(BWL) Ebonroc - Streamlined Shadowflame Sparks into ultra-laconic, high-readability tactical alerts to eliminate screen clutter during rapid 8s element dodging:
+- Shortened engage warning to 'Sparks: Immune - Dodge!'.
+- Shortened countdown pre-warning to 'Sparks (%d) in 2s'.
+- Shortened spawn alert to 'Sparks (%d)!'.
+- Shortened personal aggro alert to 'SPARK ON YOU!'.
+- Shortened timer bar labels to 'Sparks (%d)'.
 
 
 Molten Core Polish & Native Compiler Verification - 2026-10-12 (Version 30145)
