@@ -376,6 +376,8 @@ function BigWigsMessages:OnEnable()
 	self:RegisterEvent("BigWigs_Message")
 	self:RegisterEvent("BigWigs_ShowAnchors")
 	self:RegisterEvent("BigWigs_HideAnchors")
+	-- OnRegister restores before the UI scale is applied, so restore again once enabled
+	self:RestorePosition()
 end
 
 function BigWigsMessages:CreateMsgFrame()
