@@ -2,6 +2,18 @@
 Changelog for BigWigs
 --------------------------------------
 
+Ragnaros Encounter Overhaul & Cross-Revision Sync Protocol - 2026-11-03 (Version 30147)
+--------------------------------------------------------------------------------------
+(MC) Ragnaros - Complete timer recalibration and transition audit from real Turtle WoW combat log telemetry:
+- Calibrated opening Wrath of Ragnaros (Knockback) timer to 38s (31s CD + 7s Soon window, pre-warning at 28s). Eliminates the long-standing bug where 25s timers expired 10-15s before the actual server cast at ~38s.
+- Calibrated recurring Wrath of Ragnaros to 27s (22s CD + 5s Soon window, pre-warning at 19s), matching empirical 25-28s server cast intervals.
+- Added 50% HP Submerge monitoring (Turtle WoW 1.18 mechanic): actively tracks boss health during Phase 1 and triggers an urgent pre-warning ('Submerge soon (50% HP) - Prepare for Sons of Flame!') and alarm sound when Ragnaros crosses 55% HP.
+- Fixed post-emerge knockback arithmetic: clamped remaining cooldown duration to prevent negative/zero-duration bars and premature panic alarms when emerging after extended submerges.
+- Relaxed Sons of Flame counter threshold to '>= 10' to prevent missed emerge syncs when adds die simultaneously or out-of-order.
+- Implemented multi-revision backwards-compatible sync protocol: cross-syncs with raid members on older or differing BigWigs revisions (30078, 30079, 30081, 30082, and unversioned tokens) via prefix matching, completely eliminating sync partition bubbles.
+(Tools) - Added comprehensive Ragnaros verification test harness (tools/test_ragnaros.py) validating Lua 5.0 compliance, encounter state machines, and real combat replay against Chronicle logs.
+
+
 Messages Plugin Toggle & Ebonroc Sparks Laconic Alerts - 2026-10-16 (Version 30146)
 -----------------------------------------------------------------------------------
 (Plugins) Messages - Added master 'Enable' toggle option to Plugins -> Messages (localized for enUS, esES, deDE, zhCN). Allows players (such as tanks and healers) to completely suppress center-screen text alerts ('Shadow Flame casted', 'Urgent', etc.) without disabling timer bars in Plugins -> Bars.
