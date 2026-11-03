@@ -103,8 +103,8 @@ def main():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default=".",
-        help="Directory to save the packaged ZIP archive",
+        default="dist",
+        help="Directory to save the packaged ZIP archive (defaults to 'dist')",
     )
     parser.add_argument(
         "--output-name",
@@ -118,7 +118,10 @@ def main():
 
     version_clean = args.version.lstrip("v")
     filename = args.output_name or f"BigWigs-v{version_clean}.zip"
-    output_path = Path(args.output_dir) / filename
+    out_dir = Path(args.output_dir)
+    if not out_dir.is_absolute():
+        out_dir = repo_root / out_dir
+    output_path = out_dir / filename
 
     sys.exit(package_addon(repo_root, output_path))
 

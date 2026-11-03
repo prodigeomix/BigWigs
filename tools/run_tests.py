@@ -30,11 +30,12 @@ CHECKS = [
     ("Lua Syntax Audits (check_lua_syntax_problems.py)", [sys.executable, os.path.join(SCRIPT_DIR, "check_lua_syntax_problems.py")]),
     ("Ebonroc Sparks Harness (test_ebonroc_sparks.py)", [sys.executable, os.path.join(SCRIPT_DIR, "test_ebonroc_sparks.py")]),
     ("Axelus Encounter Harness (test_axelus.py)", [sys.executable, os.path.join(SCRIPT_DIR, "test_axelus.py")]),
+    ("Ragnaros Encounter Harness (test_ragnaros.py)", [sys.executable, os.path.join(SCRIPT_DIR, "test_ragnaros.py")]),
 ]
 
 def main():
     print("=" * 80)
-    print("BIGWIGS 30146 AUTOMATED VERIFICATION SUITE")
+    print("BIGWIGS 30147 AUTOMATED VERIFICATION SUITE")
     print("=" * 80)
     
     total_start = time.time()

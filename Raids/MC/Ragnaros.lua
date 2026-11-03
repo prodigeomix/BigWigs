@@ -1,13 +1,14 @@
 
 local module, L = BigWigs:ModuleDeclaration("Ragnaros", "Molten Core")
 
-module.revision = 30081
+module.revision = 30082
 module.enabletrigger = module.translatedName
-module.toggleoptions = {"emerge", "wrathofragnaros", "lava", "adds", "melt", "elementalfire", -1, "tankalert", "tankwrathhit", "tankwrathresist", "tankmark", "bosskill"}
+module.toggleoptions = {"emerge", "submergehp", "wrathofragnaros", "lava", "adds", "melt", "elementalfire", -1, "tankalert", "tankwrathhit", "tankwrathresist", "tankmark", "bosskill"}
 module.wipemobs = {"Son of Flame"}
 module.defaultDB = {
 	adds = false,
 	elementalfire = false,
+	submergehp = true,
 }
 
 L:RegisterTranslations("enUS", function() return {
@@ -16,6 +17,11 @@ L:RegisterTranslations("enUS", function() return {
 	emerge_cmd = "emerge",
 	emerge_name = "Emerge Alert",
 	emerge_desc = "Warn for Ragnaros Emerge",
+
+	submergehp_cmd = "submergehp",
+	submergehp_name = "Submerge Health Alert",
+	submergehp_desc = "Warn when Ragnaros is approaching 50% HP (Submerge Phase)",
+	msg_submergeHpSoon = "Submerge soon (50% HP) - Prepare for Sons of Flame!",
 	
 	wrathofragnaros_cmd = "wrathofragnaros",
 	wrathofragnaros_name = "Wrath of Ragnaros (Knockback) Alert",
@@ -119,8 +125,11 @@ local timer = {
 
 	nextEmerge = 90,
 
-	knockbackCd = 25, --supposed to be 25,30
-	knockbackSoon = 8,
+	firstKnockbackCd = 31,
+	firstKnockbackSoon = 7, -- 31 + 7 = 38s (calibrated to real 36.5s-41.1s log data)
+
+	knockbackCd = 22,
+	knockbackSoon = 5, -- 22 + 5 = 27s (calibrated to recurring 25.1s-28.3s intervals)
 
 	elementalFire = 8,
 }
@@ -180,6 +189,7 @@ local lastKnockTime = 0
 local submergeTime = 0
 
 local knownTank = nil
+local submergeWarned = nil
 
 function module:OnRegister()
 	self:RegisterEvent("MINIMAP_ZONE_CHANGED")
@@ -211,16 +221,41 @@ function module:OnEnable()
 	self:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_HITS", "MeleeHitEvent") --non-party raid members
 	self:RegisterEvent("CHAT_MSG_COMBAT_CREATURE_VS_CREATURE_MISSES", "MeleeHitEvent") --non-party raid members
 
+	self:RegisterEvent("UNIT_HEALTH")
 
 	self:ThrottleSync(5, syncName.knockback)
+	self:ThrottleSync(5, "RagnarosKnockback")
+	self:ThrottleSync(5, "RagnarosKnockback30078")
+	self:ThrottleSync(5, "RagnarosKnockback30079")
+	self:ThrottleSync(5, "RagnarosKnockback30081")
+	self:ThrottleSync(5, "RagnarosKnockback30082")
+
 	self:ThrottleSync(5, syncName.submerge)
+	self:ThrottleSync(5, "RagnarosSubmerge")
+	self:ThrottleSync(5, "RagnarosSubmerge30078")
+	self:ThrottleSync(5, "RagnarosSubmerge30079")
+	self:ThrottleSync(5, "RagnarosSubmerge30081")
+	self:ThrottleSync(5, "RagnarosSubmerge30082")
+
 	self:ThrottleSync(5, syncName.emerge)
+	self:ThrottleSync(5, "RagnarosEmerge")
+	self:ThrottleSync(5, "RagnarosEmerge30078")
+	self:ThrottleSync(5, "RagnarosEmerge30079")
+	self:ThrottleSync(5, "RagnarosEmerge30081")
+	self:ThrottleSync(5, "RagnarosEmerge30082")
+
 	self:ThrottleSync(0.5, syncName.addDead)
+	self:ThrottleSync(0.5, "RagnarosSonDead")
 	self:ThrottleSync(1, syncName.elementalFire)
+	self:ThrottleSync(1, "RagnarosElementalFire")
 	self:ThrottleSync(0.1, syncName.elementalFireFade)
+	self:ThrottleSync(0.1, "RagnarosElementalFireFade")
 	self:ThrottleSync(1, syncName.newTank)
+	self:ThrottleSync(1, "RagnarosNewTank")
 	self:ThrottleSync(5, syncName.tankWrathHit)
+	self:ThrottleSync(5, "RagnarosTankWrathHit")
 	self:ThrottleSync(5, syncName.tankWrathResist)
+	self:ThrottleSync(5, "RagnarosTankWrathResist")
 end
 
 function module:OnSetup()
@@ -248,6 +283,7 @@ function module:OnEngage()
 	submergeTime = 0
 
 	knownTank = nil
+	submergeWarned = nil
 end
 
 function module:OnDisengage()
@@ -301,13 +337,28 @@ end
 
 function module:TrueEngage()
 	if self.db.profile.wrathofragnaros then
-		self:Bar(L["bar_knockbackCd"], timer.knockbackCd, icon.knockback, true, color.knockbackCd)
-		self:DelayedBar(timer.knockbackCd, L["bar_knockbackSoon"], timer.knockbackSoon, icon.knockback, true, color.knockbackSoon)
+		self:Bar(L["bar_knockbackCd"], timer.firstKnockbackCd, icon.knockback, true, color.knockbackCd)
+		self:DelayedBar(timer.firstKnockbackCd, L["bar_knockbackSoon"], timer.firstKnockbackSoon, icon.knockback, true, color.knockbackSoon)
 		
 		if not (UnitClass("Player") == "Mage" or UnitClass("Player") == "Priest" or UnitClass("Player") == "Warlock") then
-			self:DelayedWarningSign(timer.knockbackCd - 3, icon.knockback, 10)
-			self:DelayedMessage(timer.knockbackCd - 3, L["msg_knockbackSoon"], "Urgent", false, nil, false)
-			self:DelayedSound(timer.knockbackCd - 3, "RunAway")
+			self:DelayedWarningSign(timer.firstKnockbackCd - 3, icon.knockback, 10)
+			self:DelayedMessage(timer.firstKnockbackCd - 3, L["msg_knockbackSoon"], "Urgent", false, nil, false)
+			self:DelayedSound(timer.firstKnockbackCd - 3, "RunAway")
+		end
+	end
+end
+
+function module:UNIT_HEALTH(msg)
+	if phase == "emerged" and UnitName(msg) == module.translatedName then
+		local healthPct = UnitHealth(msg) * 100 / UnitHealthMax(msg)
+		if healthPct > 50 and healthPct <= 55 and not submergeWarned then
+			submergeWarned = true
+			if self.db.profile.submergehp or self.db.profile.emerge then
+				self:Message(L["msg_submergeHpSoon"], "Urgent", false, nil, false)
+				self:Sound("Alarm")
+			end
+		elseif healthPct > 55 and submergeWarned then
+			submergeWarned = nil
 		end
 	end
 end
@@ -383,27 +434,31 @@ function module:MeleeHitEvent(msg)
 end
 
 
+local function isSync(msg, prefix)
+	return string.find(msg, "^" .. prefix) ~= nil
+end
+
 function module:BigWigs_RecvSync(sync, rest, nick)
-	if sync == syncName.knockback and self.db.profile.wrathofragnaros then
+	if (sync == syncName.knockback or isSync(sync, "RagnarosKnockback")) and self.db.profile.wrathofragnaros then
 		self:Knockback()
 
-	elseif sync == syncName.submerge then
+	elseif sync == syncName.submerge or isSync(sync, "RagnarosSubmerge") then
 		self:Submerge()
-	elseif sync == syncName.emerge then
+	elseif sync == syncName.emerge or isSync(sync, "RagnarosEmerge") then
 		self:Emerge()
-	elseif sync == syncName.addDead and rest and self.db.profile.adds then
+	elseif (sync == syncName.addDead or isSync(sync, "RagnarosSonDead")) and rest and self.db.profile.adds then
 		self:AddDead(rest)
 
-	elseif sync == syncName.elementalFire and rest then
+	elseif (sync == syncName.elementalFire or isSync(sync, "RagnarosElementalFire")) and rest then
 		self:ElementalFire(rest)
-	elseif sync == syncName.elementalFireFade and rest then
+	elseif (sync == syncName.elementalFireFade or isSync(sync, "RagnarosElementalFireFade")) and rest then
 		self:ElementalFireFade(rest)
 
-	elseif sync == syncName.newTank and rest then
+	elseif (sync == syncName.newTank or isSync(sync, "RagnarosNewTank")) and rest then
 		self:NewTank(rest)
-	elseif sync == syncName.tankWrathHit and rest then
+	elseif (sync == syncName.tankWrathHit or isSync(sync, "RagnarosTankWrathHit")) and rest then
 		self:TankKnockbackHit(rest)
-	elseif sync == syncName.tankWrathResist and rest then
+	elseif (sync == syncName.tankWrathResist or isSync(sync, "RagnarosTankWrathResist")) and rest then
 		self:TankKnockbackResist(rest)
 	end
 end
@@ -456,6 +511,7 @@ end
 
 function module:Submerge()
 	phase = "submerged"
+	submergeWarned = nil
 	self:ClearKnownTank()
 
 		--knockback stuff
@@ -484,6 +540,7 @@ function module:Emerge()
 	
 	phase = "emerged"
 	addDead = 0
+	submergeWarned = nil
 	
 	self:RemoveBar(L["bar_nextEmerge"])
 	self:CancelDelayedMessage(L["msg_emergeSoon"])
@@ -492,31 +549,30 @@ function module:Emerge()
 		self:Message(L["msg_emerge"], "Attention", false, nil, false)
 	end
 	
-	
 	if self.db.profile.wrathofragnaros then
-			--possibleTime - elapsedTime = timeLeft
-		local knockbackTimeLeft = (timer.knockbackCd + timer.knockbackSoon) - (submergeTime - lastKnockTime)
+		local totalCycle = timer.knockbackCd + timer.knockbackSoon
+		local elapsedBeforeSubmerge = 0
+		if lastKnockTime and lastKnockTime > 0 and submergeTime and submergeTime >= lastKnockTime then
+			elapsedBeforeSubmerge = submergeTime - lastKnockTime
+		end
+
+		local knockbackTimeLeft = totalCycle - elapsedBeforeSubmerge
+		if knockbackTimeLeft < 5 then
+			knockbackTimeLeft = 5
+		elseif knockbackTimeLeft > totalCycle then
+			knockbackTimeLeft = totalCycle
+		end
 		
-			--if timeLeft is before warn, regular bars with remaining time
 		if knockbackTimeLeft > timer.knockbackSoon + 3 then
-			self:Bar(L["bar_knockbackCd"], knockbackTimeLeft - timer.knockbackSoon, icon.knockback, true, color.knockbackCd)
-			self:DelayedBar(knockbackTimeLeft - timer.knockbackSoon, L["bar_knockbackSoon"], timer.knockbackSoon, icon.knockback, true, color.knockbackSoon)
+			local cdBar = knockbackTimeLeft - timer.knockbackSoon
+			self:Bar(L["bar_knockbackCd"], cdBar, icon.knockback, true, color.knockbackCd)
+			self:DelayedBar(cdBar, L["bar_knockbackSoon"], timer.knockbackSoon, icon.knockback, true, color.knockbackSoon)
 			
 			if not (UnitClass("Player") == "Mage" or UnitClass("Player") == "Priest" or UnitClass("Player") == "Warlock") then
-				self:DelayedWarningSign(knockbackTimeLeft - timer.knockbackSoon - 3, icon.knockback, 12)
-				self:DelayedMessage(knockbackTimeLeft - timer.knockbackSoon - 3, L["msg_knockbackSoon"], "Urgent", false, nil, false)
-				self:DelayedSound(knockbackTimeLeft - timer.knockbackSoon - 3, "RunAway")
+				self:DelayedWarningSign(cdBar - 3, icon.knockback, 10)
+				self:DelayedMessage(cdBar - 3, L["msg_knockbackSoon"], "Urgent", false, nil, false)
+				self:DelayedSound(cdBar - 3, "RunAway")
 			end			
-			
-			--if timeLeft is 0, expect knockback right the hell now
-		elseif knockbackTimeLeft <= 0 then
-			if not (UnitClass("Player") == "Mage" or UnitClass("Player") == "Priest" or UnitClass("Player") == "Warlock") then
-				self:WarningSign(icon.knockback, 12)
-				self:Message(L["msg_knockbackSoon"], "Urgent", false, nil, false)
-				self:Sound("RunAway")
-			end			
-			
-			--if timeLeft is after warn, warn and only start bar soon
 		else
 			self:Bar(L["bar_knockbackSoon"], knockbackTimeLeft, icon.knockback, true, color.knockbackSoon)
 			
@@ -551,7 +607,7 @@ end
 function module:AddDead(rest)
 	self:Message(rest..L["msg_addDead"], "Positive", false, nil, false)
 	
-	if tonumber(rest) == 10 and phase == "submerged" then
+	if tonumber(rest) >= 10 and phase == "submerged" then
 		self:Sync(syncName.emerge)
 	end
 end
